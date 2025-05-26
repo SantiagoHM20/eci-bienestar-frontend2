@@ -14,6 +14,7 @@ type Session = {
 
 const days = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
 const hours = [
+  "07:00 AM",
   "08:00 AM",
   "09:00 AM",
   "10:00 AM",
@@ -30,23 +31,42 @@ export default function ReservationPage() {
   const [sessions] = useState<Session[]>([
     {
       label: "Sesion gimnasio",
-      day: "Lunes",
-      time: "10:00 AM",
-      trainer: "Diana",
-      capacity: 5,
-      currentCapacity: 5,
+      day: "Martes",
+      time: "09:00 AM", // <- corregido
+      trainer: "trainer2",
+      capacity: 10,
+      currentCapacity: 10,
       status: "Aprobado",
     },
     {
       label: "Sesion gimnasio",
-      day: "Miércoles",
-      time: "10:00 AM",
-      trainer: "Tomas",
-      capacity: 10,
+      day: "Jueves",
+      time: "4:00 PM",
+      trainer: "Sebastián Felipe Cortés Rincón",
+      capacity: 6,
+      currentCapacity: 6,
+      status: "Aprobado",
+    },
+    {
+      label: "Sesion gimnasio",
+      day: "Viernes",
+      time: "1:00 PM",
+      trainer: "Sebastián Felipe Cortés Rincón",
+      capacity: 8,
       currentCapacity: 8,
-      status: "Pendiente",
+      status: "Aprobado",
+    },
+    {
+      label: "Sesion gimnasio",
+      day: "Lunes",
+      time: "07:00 AM", // <- corregido (pero no está en la matriz de horas)
+      trainer: "Sebastián Felipe Cortés Rincón",
+      capacity: 5,
+      currentCapacity: 5,
+      status: "Aprobado",
     },
   ]);
+
 
   const [selected, setSelected] = useState<Session | null>(null);
 
