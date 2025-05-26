@@ -26,6 +26,18 @@ const mockStudents: Student[] = [
   { id: 1, name: "Juan Pérez", attended: null, canceled: false },
   { id: 2, name: "María López", attended: null, canceled: true },
   { id: 3, name: "Carlos Gómez", attended: null, canceled: false },
+  { id: 4, name: "Lucía Fernández", attended: true, canceled: false },
+  { id: 5, name: "Diego Martínez", attended: false, canceled: false },
+  { id: 6, name: "Ana Torres", attended: true, canceled: false },
+  { id: 7, name: "Luis Ramírez", attended: null, canceled: true },
+  { id: 8, name: "Sofía Herrera", attended: false, canceled: false },
+  { id: 9, name: "Gabriel Díaz", attended: true, canceled: false },
+  { id: 10, name: "Camila Morales", attended: null, canceled: false },
+  { id: 11, name: "Felipe Castro", attended: null, canceled: false },
+  { id: 12, name: "Valentina Ríos", attended: null, canceled: false },
+  { id: 13, name: "Sebastián Vega", attended: true, canceled: false },
+  { id: 14, name: "Isabela Silva", attended: false, canceled: true },
+  { id: 15, name: "Mateo Navarro", attended: null, canceled: false },
 ];
 
 
@@ -48,19 +60,41 @@ const capacities = [5, 10, 15, 20, 25, 30];
 export default function GymSchedule() {
   const [sessions, setSessions] = useState<Session[]>([
     {
-      label: "Sesion gimnasio",
+      label: "Sesion 1",
       day: "Lunes",
-      time: "10:00 AM",
-      capacity: 5,
-      students: mockStudents,
+      time: "08:00 AM",
+      capacity: 10,
+      students: mockStudents.slice(0, 5),
     },
     {
-      label: "Sesion gimnasio",
+      label: "Sesion 2",
+      day: "Lunes",
+      time: "10:00 AM",
+      capacity: 8,
+      students: mockStudents.slice(5, 10),
+    },
+    {
+      label: "Sesion 3",
+      day: "Martes",
+      time: "09:00 AM",
+      capacity: 6,
+      students: mockStudents.slice(2, 7),
+    },
+    {
+      label: "Sesion ",
       day: "Miércoles",
       time: "10:00 AM",
       capacity: 10,
-      students: mockStudents,
+      students: mockStudents.slice(7, 12),
     },
+    {
+      label: "Sesion 5",
+      day: "Jueves",
+      time: "11:00 AM",
+      capacity: 12,
+      students: mockStudents.slice(0, 6),
+    },
+
   ]);
 
   const [selected, setSelected] = useState<Session | null>(null);
