@@ -178,7 +178,7 @@ const EvolutionPage = () => {
         <div className="flex justify-end mt-6">
           <button
             onClick={handleDownloadExcel}
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+            className="bg-black text-white px-4 py-2 rounded hover:bg-gray-500 transition"
           >
             Descargar Excel
           </button>
