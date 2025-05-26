@@ -1,9 +1,19 @@
-import React, { useEffect, useState } from 'react'; 
-import axios from 'axios';
+import { useEffect, useState } from "react";
+import axios from "axios";
+import { Bar } from "react-chartjs-2";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 import {
-  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
-  Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis
-} from 'recharts';
+  Chart as ChartJS,
+  BarElement,
+  CategoryScale,
+  LinearScale,
+  Legend,
+  Title,
+  Tooltip,
+} from "chart.js";
+
+ChartJS.register(BarElement, CategoryScale, LinearScale, Legend, Title, Tooltip);
 
 interface User {
   id: string;
@@ -11,8 +21,9 @@ interface User {
   email: string;
 }
 
-interface ProgressData {
-  goal: string;
+interface ProgressRecord {
+  id: string;
+  registrationDate: string;
   weight: number;
   height: number;
   waists: number;
@@ -21,110 +32,204 @@ interface ProgressData {
   leftarm: number;
   rightleg: number;
   leftleg: number;
-  routine: {
-    name: string;
-    difficulty: string;
-  };
 }
 
-const AdministratorProgressPage: React.FC = () => {
+const AdministratorProgressPage = () => {
   const [users, setUsers] = useState<User[]>([]);
-  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
-  const [progress, setProgress] = useState<ProgressData | null>(null);
+  const [selectedUserId, setSelectedUserId] = useState<string>("");
+  const [records, setRecords] = useState<ProgressRecord[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // Obtener usuarios
+  const fetchUsers = async () => {
+    try {
+      const res = await axios.get(
+        "https://ecibienestar-age6hsb9g4dmegea.canadacentral-01.azurewebsites.net/api/trainer/users"
+      );
+      setUsers(res.data.data);
+    } catch (err) {
+      console.error("Error al cargar usuarios", err);
+    }
+  };
+
+  const fetchProgress = async (userId: string) => {
+    setLoading(true);
+    try {
+      const res = await axios.get(
+        `https://ecibienestar-age6hsb9g4dmegea.canadacentral-01.azurewebsites.net/api/user/progress/${userId}`
+      );
+      setRecords(res.data.data);
+    } catch (err) {
+      console.error("Error al cargar progreso", err);
+    }
+    setLoading(false);
+  };
+
   useEffect(() => {
-    axios.get('https://ecibienestar-age6hsb9g4dmegea.canadacentral-01.azurewebsites.net/api/trainer/users')
-      .then(res => setUsers(res.data.data))
-      .catch(err => console.error('Error al cargar usuarios:', err));
+    fetchUsers();
   }, []);
 
-  // Obtener progreso del usuario seleccionado
   useEffect(() => {
-    if (!selectedUserId) return;
-
-    setLoading(true);
-    axios.get(`https://ecibienestar-age6hsb9g4dmegea.canadacentral-01.azurewebsites.net/api/user/progress/${selectedUserId}`)
-      .then(res => setProgress(res.data.data))
-      .catch(err => {
-        console.error('Error al cargar progreso físico:', err);
-        setProgress(null);
-      })
-      .finally(() => setLoading(false));
+    if (selectedUserId) {
+      fetchProgress(selectedUserId);
+    }
   }, [selectedUserId]);
 
-  // Preparar datos para las gráficas
-  const chartData = progress ? [
-    { name: 'Peso', value: progress.weight },
-    { name: 'Cintura', value: progress.waists },
-    { name: 'Pecho', value: progress.chest },
-    { name: 'Brazo Der.', value: progress.rightarm },
-    { name: 'Brazo Izq.', value: progress.leftarm },
-    { name: 'Pierna Der.', value: progress.rightleg },
-    { name: 'Pierna Izq.', value: progress.leftleg },
-  ] : [];
+  const generateColor = (index: number): string => {
+    const baseColors = [
+      'rgba(255, 99, 132, 0.7)',
+      'rgba(54, 162, 235, 0.7)',
+      'rgba(255, 206, 86, 0.7)',
+      'rgba(75, 192, 192, 0.7)',
+      'rgba(153, 102, 255, 0.7)',
+      'rgba(255, 159, 64, 0.7)',
+      'rgba(201, 203, 207, 0.7)',
+      'rgba(0, 200, 150, 0.7)',
+    ];
+    return baseColors[index % baseColors.length];
+  };
+
+  const labels = [
+    "Peso",
+    "Altura",
+    "Cintura",
+    "Pecho",
+    "Brazo Der.",
+    "Brazo Izq.",
+    "Pierna Der.",
+    "Pierna Izq.",
+  ];
+
+  const datasets = records.map((rec, index) => ({
+    label: rec.registrationDate,
+    data: [
+      rec.weight,
+      rec.height,
+      rec.waists,
+      rec.chest,
+      rec.rightarm,
+      rec.leftarm,
+      rec.rightleg,
+      rec.leftleg,
+    ],
+    backgroundColor: generateColor(index),
+  }));
+
+  const data = {
+    labels,
+    datasets,
+  };
+
+  const options = {
+    responsive: true,
+    plugins: {
+      legend: { position: "top" as const },
+      title: {
+        display: true,
+        text: "Histograma de Evolución Física",
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: false,
+      },
+    },
+  };
+
+  const handleDownloadExcel = () => {
+      const worksheetData = records.map((rec) => ({
+        Fecha: new Date(rec.registrationDate).toLocaleDateString('es-CO'),
+        'Peso (kg)': rec.weight,
+        'Altura (cm)': rec.height,
+        'Cintura (cm)': rec.waists,
+        'Pecho (cm)': rec.chest,
+        'Brazo Derecho (cm)': rec.rightarm,
+        'Brazo Izquierdo (cm)': rec.leftarm,
+        'Pierna Derecha (cm)': rec.rightleg,
+        'Pierna Izquierda (cm)': rec.leftleg,
+      }));
+  
+      const worksheet = XLSX.utils.json_to_sheet(worksheetData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Evolución Física');
+  
+      const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+      const blob = new Blob([excelBuffer], { type: 'application/octet-stream' });
+      saveAs(blob, 'evolucion_fisica.xlsx');
+    };
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Progreso Físico de Usuarios</h1>
+    <div className="p-6 max-w-6xl mx-auto">
+      <h1 className="text-2xl font-bold mb-6">Seguimiento por Usuario</h1>
 
-      <div className="mb-4">
-        <label className="font-semibold mr-2">Selecciona un usuario:</label>
-        <select
-          onChange={(e) => setSelectedUserId(e.target.value)}
-          className="border p-2 rounded"
-        >
-          <option value="">-- Selecciona --</option>
-          {users.map((user) => (
-            <option key={user.id} value={user.id}>
-              {user.name} ({user.email})
-            </option>
-          ))}
-        </select>
-      </div>
+      <select
+        className="p-2 border mb-6"
+        value={selectedUserId}
+        onChange={(e) => setSelectedUserId(e.target.value)}
+      >
+        <option value="">Seleccione un usuario</option>
+        {users.map((u) => (
+          <option key={u.id} value={u.id}>
+            {u.name}
+          </option>
+        ))}
+      </select>
 
-      {loading && <p>Cargando progreso físico...</p>}
+      {(() => {
+        if (loading) {
+          return <p>Cargando registros...</p>;
+        }
+        if (records.length === 0 && selectedUserId) {
+          return <p>No hay registros para este usuario.</p>;
+        }
+        if (records.length > 0) {
+          return (
+            <>
+              <Bar options={options} data={data} />
+              <h2 className="text-2xl font-bold mb-6 mt-10">Tabla comparativa</h2>
+              <div className="mt-10 overflow-x-auto">
+                <table className="w-full border-collapse border border-gray-300 text-sm">
+                  <thead>
+                    <tr className="bg-gray-100">
+                      <th className="border p-2">Fecha</th>
+                      {labels.map((label) => (
+                        <th key={label} className="border p-2 text-right">
+                          {label}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {records.map((rec) => (
+                      <tr key={rec.id} className="odd:bg-white even:bg-gray-50">
+                        <td className="border p-2">{rec.registrationDate}</td>
+                        <td className="border p-2 text-right">{rec.weight}</td>
+                        <td className="border p-2 text-right">{rec.height}</td>
+                        <td className="border p-2 text-right">{rec.waists}</td>
+                        <td className="border p-2 text-right">{rec.chest}</td>
+                        <td className="border p-2 text-right">{rec.rightarm}</td>
+                        <td className="border p-2 text-right">{rec.leftarm}</td>
+                        <td className="border p-2 text-right">{rec.rightleg}</td>
+                        <td className="border p-2 text-right">{rec.leftleg}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
 
-      {progress && (
-        <div className="bg-gray-100 p-4 rounded shadow-md">
-          <h2 className="text-xl font-semibold mb-4">Meta: {progress.goal}</h2>
-          <p className="mb-2"><strong>Rutina:</strong> {progress.routine?.name} ({progress.routine?.difficulty})</p>
-
-          {/* Tabla */}
-          <table className="table-auto w-full mb-6 border border-gray-300">
-            <thead>
-              <tr className="bg-gray-200">
-                <th className="p-2 border">Medida</th>
-                <th className="p-2 border">Valor</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr><td className="p-2 border">Peso</td><td className="p-2 border">{progress.weight} kg</td></tr>
-              <tr><td className="p-2 border">Altura</td><td className="p-2 border">{progress.height} m</td></tr>
-              <tr><td className="p-2 border">Cintura</td><td className="p-2 border">{progress.waists} cm</td></tr>
-              <tr><td className="p-2 border">Pecho</td><td className="p-2 border">{progress.chest} cm</td></tr>
-              <tr><td className="p-2 border">Brazo Derecho</td><td className="p-2 border">{progress.rightarm} cm</td></tr>
-              <tr><td className="p-2 border">Brazo Izquierdo</td><td className="p-2 border">{progress.leftarm} cm</td></tr>
-              <tr><td className="p-2 border">Pierna Derecha</td><td className="p-2 border">{progress.rightleg} cm</td></tr>
-              <tr><td className="p-2 border">Pierna Izquierda</td><td className="p-2 border">{progress.leftleg} cm</td></tr>
-            </tbody>
-          </table>
-
-          {/* Gráfica de Barras */}
-          <h3 className="text-lg font-semibold mb-2">Gráfica de Comparación</h3>
-          <div className="w-full h-64 mb-8">
-            <ResponsiveContainer>
-              <BarChart data={chartData}>
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="value" fill="#3b82f6" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-      )}
+              {/* Botón de descarga al final */}
+              <div className="flex justify-end mt-6">
+                <button
+                  onClick={handleDownloadExcel}
+                  className="bg-red-700 text-white px-4 py-2 rounded hover:bg-red-400 transition"
+                >
+                  Descargar Excel
+                </button>
+              </div>
+            </>
+          );
+        }
+        return null;
+      })()}
     </div>
   );
 };

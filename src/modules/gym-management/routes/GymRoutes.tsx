@@ -28,11 +28,11 @@ import ProgressPage from "@/modules/gym-management/pages/trainer/ProgressPage";
 import AdministratorIndexPage from "../pages/AdministratorIndexPage";
 import AdministratorProgressPage from "@/modules/gym-management/pages/admin/AdministratorProgressPage";
 import AdministratorAttendancePage from "@/modules/gym-management/pages/admin/AdministratorAttendancePage";
-import AdministratorSessionsPage from "@/modules/gym-management/pages/admin/AdministratorSessionsPage";
 
 // NotFound page
 import NotFoundPage from "@/modules/gym-management/pages/NotFoundPage";
 import GymNavBar from "../components/GymNavBar";
+import GymNavBarAdmin from "../components/GymNavAdmin";
 
 const studentTabs = [
   { label: "Inicio", path: "home" },
@@ -55,7 +55,6 @@ const trainerTabs = [
 const adminTabs = [
   { label: "Progresos usuarios", path: "progress" },
   { label: "Asistencia", path: "attendance" },
-  { label: "Entrenadores", path: "sessions" }
 ]; 
 
 const GymRoutes = () => {
@@ -94,11 +93,10 @@ const GymRoutes = () => {
       {/* Rutas protegidas para administradores */}
       <Route
         path="admin"
-        element={<GymNavBar tabs={adminTabs} ariaLabel="Navegación del administrador" />}
+        element={<GymNavBarAdmin tabs={adminTabs} ariaLabel="Navegación del administrador" />}
       >
         <Route path="progress" element={<AdministratorProgressPage />} />
         <Route path="attendance" element={<AdministratorAttendancePage />} />
-        <Route path="sessions" element={<AdministratorSessionsPage />} />
       </Route>
 
       {/* Rutas que no requieren la barra de navegación */}

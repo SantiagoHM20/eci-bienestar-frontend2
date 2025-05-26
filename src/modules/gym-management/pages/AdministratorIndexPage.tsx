@@ -40,7 +40,7 @@ const AdministratorIndexPage = () => {
           <Card className="h-full w-72 transition-all hover:-translate-y-1">
             <CardBody className="flex flex-col items-center justify-center p-6 text-center">
               <p className="text-lg font-medium mb-4">Ver progresos de usuarios</p>
-               <Button className="bg-black text-white p-4 rounded-t-lg flex justify-between items-center" onPress={() => navigate("../admin/progress")}>
+               <Button className="bg-red-700 text-white p-4 rounded-t-lg flex justify-between items-center" onPress={() => navigate("../admin/progress")}>
                 Ir a progresos
               </Button>
             </CardBody>
@@ -50,7 +50,7 @@ const AdministratorIndexPage = () => {
           <Card className="h-full w-72 transition-all hover:-translate-y-1">
             <CardBody className="flex flex-col items-center justify-center p-6 text-center">
               <p className="text-lg font-medium mb-4">Ver asistencias</p>
-               <Button className="bg-black text-white p-4 rounded-t-lg flex justify-between items-center" onPress={() => navigate("../admin/attendance")}>
+               <Button className="bg-red-700 text-white p-4 rounded-t-lg flex justify-between items-center" onPress={() => navigate("../admin/attendance")}>
                 Ir a asistencias
               </Button>
             </CardBody>
@@ -60,7 +60,7 @@ const AdministratorIndexPage = () => {
           <Card className="h-full w-72 transition-all hover:-translate-y-1">
             <CardBody className="flex flex-col items-center justify-center p-6 text-center">
               <p className="text-lg font-medium mb-4">Ver sesiones por entrenadores</p>
-              <Button className="bg-black text-white p-4 rounded-t-lg flex justify-between items-center" onPress={() => navigate("../admin/sessions")}>
+              <Button className="bg-red-700 text-white p-4 rounded-t-lg flex justify-between items-center" onPress={() => navigate("../admin/sessions")}>
                 Ver sesiones
               </Button>
             </CardBody>

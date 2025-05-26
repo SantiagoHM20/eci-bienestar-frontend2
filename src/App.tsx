@@ -147,7 +147,8 @@ function App() {
           path="/modules/gym/*"
           element={
             <Layout
-              moduleColor={moduleColors.gym}
+              //Si el rol del usuario es administrador, se muestra el color del módulo en rojo
+              moduleColor={user?.role === Role.ADMINISTRATOR ? "#990000" : moduleColors.gym}
               activeModule={MODULE_MAPPING.gym}
               onNotificationsClick={handleNotificationsClick}
               showSidebar={user?.role === Role.STUDENT}
