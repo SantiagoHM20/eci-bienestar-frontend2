@@ -26,10 +26,8 @@ const hours = [
   "5:00 PM",
 ];
 
-const capacities = [5, 10, 15, 20, 25, 30];
-
 export default function ReservationPage() {
-  const [sessions, setSessions] = useState<Session[]>([
+  const [sessions] = useState<Session[]>([
     {
       label: "Sesion gimnasio",
       day: "Lunes",

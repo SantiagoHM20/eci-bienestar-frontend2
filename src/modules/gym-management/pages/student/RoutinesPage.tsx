@@ -1,31 +1,27 @@
 import { XMarkIcon } from "@heroicons/react/24/solid";
 import React from "react";
-import { useNavigate } from "react-router-dom";
 
 import pectorales from "/src/modules/gym-management/assets/images/pectorales.png";
 import dorsales from "/src/modules/gym-management/assets/images/dorsales.png";
-import trapecios from "/src/modules/gym-management/assets/images/trapecios.png";
 import deltoides from "/src/modules/gym-management/assets/images/deltoides.png";
 import biceps from "/src/modules/gym-management/assets/images/biceps.png";
 import triceps from "/src/modules/gym-management/assets/images/triceps.png";
 import abdominales from "/src/modules/gym-management/assets/images/abdominales.png";
-import oblicuos from "/src/modules/gym-management/assets/images/oblicuos.png";
 import cuadriceps from "/src/modules/gym-management/assets/images/cuadriceps.png";
 import isquiotibiales from "/src/modules/gym-management/assets/images/isquiotibiales.png";
 import gluteos from "/src/modules/gym-management/assets/images/gluteos.png";
 
 const mockedMuscleGroups = [
-  { id: 1, name: "Pectorales", img: pectorales, description: "Ejercicios para pectorales", exercises: ["Press banca", "Apertura con mancuernas"], durationDays: 15, difficulty: "Intermedio" },
-  { id: 2, name: "Dorsales", img: dorsales, description: "Ejercicios para dorsales", exercises: ["Dominadas", "Remo con barra"], durationDays: 20, difficulty: "Avanzado" },
-  { id: 3, name: "Trapecios", img: trapecios, description: "Ejercicios para trapecios", exercises: ["Encogimiento de hombros", "Remo al mentón"], durationDays: 10, difficulty: "Principiante" },
-  { id: 4, name: "Deltoides", img: deltoides, description: "Ejercicios para deltoides", exercises: ["Press militar", "Elevaciones laterales"], durationDays: 12, difficulty: "Intermedio" },
-  { id: 5, name: "Bíceps", img: biceps, description: "Ejercicios para bíceps", exercises: ["Curl con barra", "Curl martillo"], durationDays: 8, difficulty: "Principiante" },
-  { id: 6, name: "Tríceps", img: triceps, description: "Ejercicios para tríceps", exercises: ["Fondos", "Extensiones de tríceps"], durationDays: 10, difficulty: "Intermedio" },
-  { id: 7, name: "Abdominales", img: abdominales, description: "Ejercicios para abdominales", exercises: ["Crunches", "Elevaciones de piernas"], durationDays: 7, difficulty: "Principiante" },
-  { id: 8, name: "Oblicuos", img: oblicuos, description: "Ejercicios para oblicuos", exercises: ["Twists rusos", "Plancha lateral"], durationDays: 9, difficulty: "Intermedio" },
-  { id: 9, name: "Cuádriceps", img: cuadriceps, description: "Ejercicios para cuádriceps", exercises: ["Sentadillas", "Prensa de piernas"], durationDays: 15, difficulty: "Avanzado" },
-  { id: 10, name: "Isquiotibiales", img: isquiotibiales, description: "Ejercicios para isquiotibiales", exercises: ["Peso muerto", "Curl de piernas"], durationDays: 12, difficulty: "Intermedio" },
-  { id: 11, name: "Glúteos", img: gluteos, description: "Ejercicios para glúteos", exercises: ["Puente de glúteos", "Sentadillas sumo"], durationDays: 10, difficulty: "Principiante" },
+  { id: 1, name: "Glúteos", img: gluteos, description: "Rutina para glúteos", exercises: ["Puente de glúteos"], durationDays: 10, difficulty: "Facil" },
+  { id: 2, name: "Pecho", img: pectorales, description: "Rutina para pecho", exercises: ["Press de banca"], durationDays: 5, difficulty: "Facil" },
+  { id: 3, name: "Espalda", img: dorsales, description: "Rutina para espalda", exercises: ["Fondos"], durationDays: 7, difficulty: "Mediano" },
+  { id: 4, name: "Hombros", img: deltoides, description: "Rutina para hombros", exercises: ["Twists rusos"], durationDays: 6, difficulty: "Mediano" },
+  { id: 5, name: "Bíceps", img: biceps, description: "Rutina para bíceps", exercises: ["Curl martillo"], durationDays: 4, difficulty: "Mediano" },
+  { id: 6, name: "Tríceps", img: triceps, description: "Rutina para tríceps", exercises: ["Extensiones de tríceps"], durationDays: 5, difficulty: "Facil" },
+  { id: 7, name: "Abdominales", img: abdominales, description: "Rutina para abdominales", exercises: ["Elevaciones de piernas"], durationDays: 3, difficulty: "Facil" },
+  { id: 8, name: "Pierna", img: isquiotibiales, description: "Rutina para pierna", exercises: ["Sentadillas"], durationDays: 2, difficulty: "Dificil" },
+  { id: 9, name: "Cuádriceps", img: cuadriceps, description: "Rutina para cuádriceps", exercises: ["Prensa de piernas"], durationDays: 5, difficulty: "Mediano" },
+  { id: 10, name: "Gemelos", img: isquiotibiales, description: "Rutina para gemelos", exercises: ["Crunches"], durationDays: 3, difficulty: "Facil" },
 ];
 
 type Exercise = {
@@ -39,31 +35,119 @@ type Exercise = {
 };
 
 const routinesByMuscle: Record<string, Exercise[]> = {
-  Pectorales: [
+  Glúteos: [
     {
-      name: "Press de banca",
+      name: "Puente de glúteos",
+      images: ["/src/modules/gym-management/assets/images/gluteos.png"],
       repetitions: 10,
-      sets: 3,
-      duration: 30,
-      type: "Fuerza",
-      muscleGroup: ["Pectorales"],
-      images: ["/src/modules/gym-management/assets/images/pectorales.png"],
+      sets: 2,
+      duration: 10,
+      type: "CARDIO",
+      muscleGroup: ["GLUTEOS"],
     },
-
+  ],
+  Pecho: [
     {
-      name: "Apertura con mancuernas",
-      repetitions: 12,
+    name: "Press banca",
+    images: ["/src/modules/gym-management/assets/images/pectorales.png"],
+    repetitions: 5,
+    sets: 2,
+    duration: 10,
+    type: "RESISTENCIA",
+    muscleGroup: ["PECHO"],
+    },
+  ],
+  Espalda: [
+    {
+      name: "Fondos",
+      images: ["/src/modules/gym-management/assets/images/dorsales.png"],
+      repetitions: 2,
+      sets: 2,
+      duration: 6,
+      type: "FUERZA",
+      muscleGroup: ["ESPALDA"],
+    },
+  ],
+  Hombros: [
+    {
+      name: "Twists rusos",
+      images: ["/src/modules/gym-management/assets/images/deltoides.png"],
+      repetitions: 2,
       sets: 3,
-      duration: 25,
-      type: "Fuerza",
-      muscleGroup: ["Pectorales"],
-      images: ["/src/modules/gym-management/assets/images/pectorales.png"],
+      duration: 3,
+      type: "FUERZA",
+      muscleGroup: ["HOMBROS"],
+    },
+  ],
+  Biceps: [
+    {
+      name: "Curl martillo",
+      images: ["/src/modules/gym-management/assets/images/biceps.png"],
+      repetitions: 4,
+      sets: 3,
+      duration: 2,
+      type: "POTENCIA",
+      muscleGroup: ["BICEPS"],
+    },
+  ],
+  Triceps: [
+    {
+      name: "Extensiones de tríceps",
+      images: ["/src/modules/gym-management/assets/images/triceps.png"],
+      repetitions: 1,
+      sets: 3,
+      duration: 5,
+      type: "FUERZA",
+      muscleGroup: ["TRICEPS"],
+    },
+  ],
+  Abdominales: [
+    {
+      name: "Elevaciones de piernas",
+      images: ["/src/modules/gym-management/assets/images/abdominales.png"],
+      repetitions: 3,
+      sets: 1,
+      duration: 1,
+      type: "RECUPERACION",
+      muscleGroup: ["ABDOMINALES"],
+    },
+  ],
+  Pierna: [
+    {
+      name: "Sentadillas",
+      images: ["/src/modules/gym-management/assets/images/isquiotibiales.png"],
+      repetitions: 2,
+      sets: 2,
+      duration: 2,
+      type: "RESISTENCIA",
+      muscleGroup: ["PIERNALES"],
+    },
+  ],
+  Cuádriceps: [
+    {
+      name: "Prensa de piernas",
+      images: ["/src/modules/gym-management/assets/images/cuadriceps.png"],
+      repetitions: 5,
+      sets: 2,
+      duration: 1,
+      type: "POTENCIA",
+      muscleGroup: ["CUADRICEPS"],
+    },
+  ],
+  Gemelos: [
+    {
+      name: "Crunches",
+      images: ["/src/modules/gym-management/assets/images/isquiotibiales.png"],
+      repetitions: 3,
+      sets: 4,
+      duration: 3,
+      type: "RECUPERACION",
+      muscleGroup: ["GEMELOS"],
     },
   ],
 };
 
 export default function RoutinesPage() {
-  const navigate = useNavigate();
   const [selectedMuscle, setSelectedMuscle] = React.useState<string | null>(null);
 
   return (

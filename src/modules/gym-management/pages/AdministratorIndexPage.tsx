@@ -39,9 +39,9 @@ const AdministratorIndexPage = () => {
           {/* Ver sesiones de hoy */}
           <Card className="h-full w-72 transition-all hover:-translate-y-1">
             <CardBody className="flex flex-col items-center justify-center p-6 text-center">
-              <p className="text-lg font-medium mb-4">Ver sesiones de hoy</p>
-              <Button color="primary" onPress={() => navigate("trainerHome")}>
-                Ir a sesiones
+              <p className="text-lg font-medium mb-4">Ver progresos de usuarios</p>
+               <Button className="bg-black text-white p-4 rounded-t-lg flex justify-between items-center" onPress={() => navigate("../admin/progress")}>
+                Ir a progresos
               </Button>
             </CardBody>
           </Card>
@@ -49,9 +49,9 @@ const AdministratorIndexPage = () => {
           {/* Crear rutina */}
           <Card className="h-full w-72 transition-all hover:-translate-y-1">
             <CardBody className="flex flex-col items-center justify-center p-6 text-center">
-              <p className="text-lg font-medium mb-4">Crear nuevas rutinas</p>
-              <Button color="success" onPress={() => navigate("trainer-routines")}>
-                Crear rutina
+              <p className="text-lg font-medium mb-4">Ver asistencias</p>
+               <Button className="bg-black text-white p-4 rounded-t-lg flex justify-between items-center" onPress={() => navigate("../admin/attendance")}>
+                Ir a asistencias
               </Button>
             </CardBody>
           </Card>
@@ -59,9 +59,9 @@ const AdministratorIndexPage = () => {
           {/* Ver progreso físico */}
           <Card className="h-full w-72 transition-all hover:-translate-y-1">
             <CardBody className="flex flex-col items-center justify-center p-6 text-center">
-              <p className="text-lg font-medium mb-4">Ver progresos físicos</p>
-              <Button color="secondary" onPress={() => navigate("progress")}>
-                Ver progreso
+              <p className="text-lg font-medium mb-4">Ver sesiones por entrenadores</p>
+              <Button className="bg-black text-white p-4 rounded-t-lg flex justify-between items-center" onPress={() => navigate("../admin/sessions")}>
+                Ver sesiones
               </Button>
             </CardBody>
           </Card>

@@ -130,7 +130,7 @@ export default function TrainerGenerateReportPage() {
         <div>
           <h3 className="text-lg font-semibold">Entradas del Reporte</h3>
           {reportEntries.map((entry, index) => (
-            <div key={index} className="border p-4 rounded-md space-y-2">
+            <div key={entry.id || index} className="border p-4 rounded-md space-y-2">
               <div className="flex justify-between items-center">
                 <label className="block text-sm font-medium">
                   {entry.type === "user" ? "Usuario" : "Sesión"}
@@ -154,12 +154,17 @@ export default function TrainerGenerateReportPage() {
               {(entry.type === "user" ? userQuery : sessionQuery) && (
                 <ul className="border rounded mt-2 bg-white max-h-40 overflow-y-auto">
                   {(entry.type === "user" ? filteredUsers : filteredSessions).map((item) => (
-                    <li
-                      key={item.id}
-                      onClick={() => handleSelect({ id: item.id, name: item.label || item.name }, index)}
-                      className="p-2 hover:bg-gray-100 cursor-pointer"
-                    >
-                      {item.label || item.name}
+                    <li key={item.id}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const label = 'label' in item ? item.label : item.name;
+                          handleSelect({ id: item.id, name: label }, index);
+                        }}
+                        className="w-full text-left p-2 hover:bg-gray-100 cursor-pointer focus:outline-none"
+                      >
+                        {'label' in item ? item.label : item.name}
+                      </button>
                     </li>
                   ))}
                 </ul>

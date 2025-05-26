@@ -33,7 +33,7 @@ function GymRedirect() {
                 // Redirección por rol
                 if (user.role === Role.ADMINISTRATOR) {
                     console.log("Redirigiendo a administrador");
-                    navigate("administrator/index", { replace: true });
+                    navigate("admin/index", { replace: true });
                     return;
                 }else if (user.role === Role.TRAINER) {
                     console.log("Redirigiendo a entrenador");

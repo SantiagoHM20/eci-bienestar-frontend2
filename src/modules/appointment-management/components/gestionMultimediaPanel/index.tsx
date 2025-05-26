@@ -1,1 +1,0 @@
-export {default as GestionMultimediaPanel} from './gestionMultimediaPanel.tsx';

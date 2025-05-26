@@ -1,62 +1,34 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
-// Schema de validación Yup
+// ✅ Validación
 const schema = yup.object().shape({
   goal: yup.string().required("El objetivo es obligatorio"),
-  registrationDate: yup
-    .string()
-    .required("La fecha de registro es obligatoria")
-    .matches(/^\d{4}-\d{2}-\d{2}$/, "Fecha inválida"),
-  weight: yup
-    .number()
-    .typeError("Peso inválido")
-    .positive("Peso debe ser positivo")
-    .required("Peso obligatorio"),
-  height: yup
-    .number()
-    .typeError("Altura inválida")
-    .positive("Altura debe ser positiva")
-    .required("Altura obligatoria"),
-  waists: yup
-    .number()
-    .typeError("Cintura inválida")
-    .positive("Cintura debe ser positiva")
-    .required("Cintura obligatoria"),
-  chest: yup
-    .number()
-    .typeError("Pecho inválido")
-    .positive("Pecho debe ser positivo")
-    .required("Pecho obligatorio"),
-  rightarm: yup
-    .number()
-    .typeError("Brazo derecho inválido")
-    .positive("Debe ser positivo")
-    .required("Brazo derecho obligatorio"),
-  leftarm: yup
-    .number()
-    .typeError("Brazo izquierdo inválido")
-    .positive("Debe ser positivo")
-    .required("Brazo izquierdo obligatorio"),
-  rightleg: yup
-    .number()
-    .typeError("Pierna derecha inválida")
-    .positive("Debe ser positiva")
-    .required("Pierna derecha obligatoria"),
-  leftleg: yup
-    .number()
-    .typeError("Pierna izquierda inválida")
-    .positive("Debe ser positiva")
-    .required("Pierna izquierda obligatoria"),
+  registrationDate: yup.string().required("La fecha es obligatoria").matches(/^\d{4}-\d{2}-\d{2}$/, "Fecha inválida"),
+  weight: yup.number().typeError("Peso inválido").positive().required(),
+  height: yup.number().typeError("Altura inválida").positive().required(),
+  waists: yup.number().typeError("Cintura inválida").positive().required(),
+  chest: yup.number().typeError("Pecho inválido").positive().required(),
+  rightarm: yup.number().typeError("Brazo derecho inválido").positive().required(),
+  leftarm: yup.number().typeError("Brazo izquierdo inválido").positive().required(),
+  rightleg: yup.number().typeError("Pierna derecha inválida").positive().required(),
+  leftleg: yup.number().typeError("Pierna izquierda inválida").positive().required(),
+  routineId: yup.string().required("Selecciona una rutina"),
 });
+
+// Tipos de datos para las rutinas
+interface Routine {
+  id: string;
+  name: string;
+}
 
 // Tipo de datos del formulario
 interface FormData {
   goal: string;
-  registrationDate: string; // YYYY-MM-DD
+  registrationDate: string;
   weight: number;
   height: number;
   waists: number;
@@ -65,13 +37,13 @@ interface FormData {
   leftarm: number;
   rightleg: number;
   leftleg: number;
+  routineId: string;
 }
 
 const RegisterProgressPages = () => {
-  // Simular datos del último registro (podrían venir de API)
   const [lastRecord, setLastRecord] = useState<FormData | null>(null);
+  const [routines, setRoutines] = useState<Routine[]>([]);
 
-  // Inicializar react-hook-form
   const {
     handleSubmit,
     control,
@@ -82,153 +54,349 @@ const RegisterProgressPages = () => {
     defaultValues: {
       goal: "",
       registrationDate: "",
-      weight: 0,
-      waists: 0,
-      chest: 0,
-      rightarm: 0,
-      leftarm: 0,
-      rightleg: 0,
-      leftleg: 0,
+      weight: 0.0,
+      height: 0.0,
+      waists: 0.0,
+      chest: 0.0,
+      rightarm: 0.0,
+      leftarm: 0.0,
+      rightleg: 0.0,
+      leftleg: 0.0,
+      routineId: "",
     },
   });
 
   useEffect(() => {
-    // Aquí iría la lógica para obtener el último registro desde API/almacenamiento
-    // Simulación:
-    const simulatedLastRecord: FormData = {
-      goal: "Perder peso",
-      registrationDate: "2025-05-20",
-      weight: 75.5,
-      height: 170,
-      waists: 85,
-      chest: 95,
-      rightarm: 32,
-      leftarm: 31.5,
-      rightleg: 55,
-      leftleg: 54.5,
+    const fetchRoutines = async () => {
+      try {
+        const response = await axios.get("https://ecibienestar-age6hsb9g4dmegea.canadacentral-01.azurewebsites.net/api/user/routines");
+        setRoutines(response.data?.data || []);
+      } catch (error) {
+        console.error("Error al cargar las rutinas:", error);
+      }
     };
-    setLastRecord(simulatedLastRecord);
-    // También opcionalmente cargar esos datos como valores iniciales en el formulario:
-    reset(simulatedLastRecord);
+
+    fetchRoutines();
+  }, []);
+
+  useEffect(() => {
+    const fechtLastProgress = async () => {
+      try{
+        const emaiil = sessionStorage.getItem("email");
+        if (!emaiil) {
+          return;
+        }
+
+        const user = await axios.get(`https://ecibienestar-age6hsb9g4dmegea.canadacentral-01.azurewebsites.net/api/user/users/email?email=${encodeURIComponent(emaiil)}`);
+        const userId = user.data?.data?.id;
+
+        const response = await axios.get(`https://ecibienestar-age6hsb9g4dmegea.canadacentral-01.azurewebsites.net/api/user/progress/${userId}`);
+        const lastProgress = response.data?.data?.slice(-1)[0];
+
+        if(lastProgress){
+          const mappedLastProgress: FormData = {
+            goal: lastProgress.goal || "",
+            registrationDate: lastProgress.registrationDate || "",
+            weight: lastProgress.weight || 0.0,
+            height: lastProgress.height || 0.0,
+            waists: lastProgress.waists || 0.0,
+            chest: lastProgress.chest || 0.0,
+            rightarm: lastProgress.rightarm || 0.0,
+            leftarm: lastProgress.leftarm || 0.0,
+            rightleg: lastProgress.rightleg || 0.0,
+            leftleg: lastProgress.leftleg || 0.0,
+            routineId: lastProgress.routine?.id || "",
+          };
+          setLastRecord(mappedLastProgress);
+          reset(mappedLastProgress);
+        }
+      } catch (error) {
+        console.error("Error al cargar el último registro de progreso:", error);
+      }
+    };
+
+    fechtLastProgress();
   }, [reset]);
 
-  const onSubmit = (data: FormData) => {
-    alert("Progreso registrado correctamente");
-    console.log("Datos enviados:", data);
-  };
+  const onSubmit = async (formData: FormData) => {
+  try {
+    const email = sessionStorage.getItem("email");
+    if (!email) throw new Error("Email no encontrado en sesión.");
+
+    // Obtener datos del usuario
+    const userResponse = await axios.get(
+      `https://ecibienestar-age6hsb9g4dmegea.canadacentral-01.azurewebsites.net/api/user/users/email?email=${encodeURIComponent(email)}`
+    );
+    const user = userResponse.data.data;
+
+    if (!user || !user.id) throw new Error("Usuario no encontrado.");
+
+    // Obtener rutina completa
+    const routineResponse = await axios.get(
+      `https://ecibienestar-age6hsb9g4dmegea.canadacentral-01.azurewebsites.net/api/user/routines/${formData.routineId}`
+    );
+    const routine = routineResponse.data.data;
+
+    if (!routine || !routine.id) throw new Error("Rutina no encontrada.");
+
+    // Construir el cuerpo del POST
+    const payload = {
+      id: "", // El backend generará el ID
+      userId: user,
+      routine: routine,
+      goal: formData.goal,
+      registrationDate: formData.registrationDate,
+      weight: formData.weight,
+      height: formData.height,
+      waists: formData.waists,
+      chest: formData.chest,
+      rightarm: formData.rightarm,
+      leftarm: formData.leftarm,
+      rightleg: formData.rightleg,
+      leftleg: formData.leftleg,
+      comments: [],
+    };
+
+    // Enviar al backend
+    await axios.post(
+      "https://ecibienestar-age6hsb9g4dmegea.canadacentral-01.azurewebsites.net/api/user/progress",
+      payload
+    );
+
+    alert("Progreso registrado exitosamente ✅");
+
+    reset();
+  } catch (error: any) {
+    console.error("Error al registrar el progreso:", error);
+    alert("❌ Ocurrió un error al registrar el progreso.");
+  }
+};
 
   return (
     <div className="p-6 max-w-2xl mx-auto space-y-6">
-      <h1 className="text-xl font-bold bg-black text-white py-2 px-4 rounded">
-        Registro de Progreso
-      </h1>
+      <h1 className="text-xl font-bold bg-black text-white py-2 px-4 rounded">Registro de Progreso Físico</h1>
 
       {lastRecord && (
         <div className="bg-gray-100 p-4 rounded mb-6">
           <h2 className="font-semibold mb-2">Último registro</h2>
           <ul className="text-sm space-y-1">
             <li><strong>Objetivo:</strong> {lastRecord.goal}</li>
-            <li><strong>Fecha de registro:</strong> {lastRecord.registrationDate}</li>
+            <li><strong>Fecha:</strong> {lastRecord.registrationDate}</li>
             <li><strong>Peso:</strong> {lastRecord.weight} kg</li>
             <li><strong>Altura:</strong> {lastRecord.height} cm</li>
             <li><strong>Cintura:</strong> {lastRecord.waists} cm</li>
             <li><strong>Pecho:</strong> {lastRecord.chest} cm</li>
-            <li><strong>Brazo derecho:</strong> {lastRecord.rightarm} cm</li>
-            <li><strong>Brazo izquierdo:</strong> {lastRecord.leftarm} cm</li>
-            <li><strong>Pierna derecha:</strong> {lastRecord.rightleg} cm</li>
-            <li><strong>Pierna izquierda:</strong> {lastRecord.leftleg} cm</li>
+            <li><strong>Brazo Derecho:</strong> {lastRecord.rightarm} cm</li>
+            <li><strong>Brazo Izquierdo:</strong> {lastRecord.leftarm} cm</li>
+            <li><strong>Pierna Derecha:</strong> {lastRecord.rightleg} cm</li>
+            <li><strong>Pierna Izquierda:</strong> {lastRecord.leftleg} cm</li>
+            <li><strong>Rutina:</strong> {routines.find(r => r.id === lastRecord.routineId)?.name || "No asignada"}</li>
           </ul>
         </div>
       )}
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        {/* Rutina */}
+        <div>
+          <label className="block font-semibold">Rutina <span className="text-red-500">*</span></label>
+          <Controller
+            name="routineId"
+            control={control}
+            render={({ field }) => (
+              <select
+                {...field}
+                className={`w-full border p-2 rounded ${errors.routineId ? "border-red-500" : "border-gray-300"}`}
+              >
+                <option value="">Selecciona una rutina</option>
+                {routines.map((routine) => (
+                  <option key={routine.id} value={routine.id}>
+                    {routine.name}
+                  </option>
+                ))}
+              </select>
+            )}
+          />
+          {errors.routineId && <p className="text-red-500 text-sm mt-1">{errors.routineId.message}</p>}
+        </div>
         {/* Objetivo */}
         <div>
-          <label className="block font-semibold">
-            Objetivo<span className="text-red-500">*</span>
-          </label>
+          <label className="block font-semibold">Objetivo <span className="text-red-500">*</span></label>
           <Controller
             name="goal"
             control={control}
             render={({ field }) => (
               <input
-                type="text"
                 {...field}
-                placeholder="Ejemplo: Perder peso, ganar músculo..."
-                className={`w-full border p-2 rounded ${
-                  errors.goal ? "border-red-500" : "border-gray-300"
-                }`}
+                type="text"
+                className={`w-full border p-2 rounded ${errors.goal ? "border-red-500" : "border-gray-300"}`}
               />
             )}
           />
-          {errors.goal && (
-            <p className="text-red-500 text-sm mt-1">{errors.goal.message}</p>
-          )}
+          {errors.goal && <p className="text-red-500 text-sm mt-1">{errors.goal.message}</p>}
         </div>
 
         {/* Fecha de registro */}
         <div>
-          <label className="block font-semibold">
-            Fecha de registro<span className="text-red-500">*</span>
-          </label>
+          <label className="block font-semibold">Fecha de registro <span className="text-red-500">*</span></label>
           <Controller
             name="registrationDate"
             control={control}
             render={({ field }) => (
               <input
-                type="date"
                 {...field}
-                className={`w-full border p-2 rounded ${
-                  errors.registrationDate ? "border-red-500" : "border-gray-300"
-                }`}
+                type="date"
+                className={`w-full border p-2 rounded ${errors.registrationDate ? "border-red-500" : "border-gray-300"}`}
               />
             )}
           />
-          {errors.registrationDate && (
-            <p className="text-red-500 text-sm mt-1">
-              {errors.registrationDate.message}
-            </p>
-          )}
+          {errors.registrationDate && <p className="text-red-500 text-sm mt-1">{errors.registrationDate.message}</p>}
         </div>
 
-        {/* Campos numéricos */}
-        {[
-          { name: "weight", label: "Peso (kg)" },
-          { name: "waists", label: "Cintura (cm)" },
-          { name: "chest", label: "Pecho (cm)" },
-          { name: "rightarm", label: "Brazo derecho (cm)" },
-          { name: "leftarm", label: "Brazo izquierdo (cm)" },
-          { name: "rightleg", label: "Pierna derecha (cm)" },
-          { name: "leftleg", label: "Pierna izquierda (cm)" },
-        ].map(({ name, label }) => (
-          <div key={name}>
-            <label className="block font-semibold">{label}</label>
-            <Controller
-              name={name as keyof FormData}
-              control={control}
-              render={({ field }) => (
-                <input
-                  type="number"
-                  step="0.1"
-                  {...field}
-                  className={`w-full border p-2 rounded ${
-                    errors[name as keyof FormData] ? "border-red-500" : "border-gray-300"
-                  }`}
-                />
-              )}
-            />
-            {errors[name as keyof FormData] && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors[name as keyof FormData]?.message}
-              </p>
+        {/* Peso */}
+        <div>
+          <label className="block font-semibold">Peso (kg) <span className="text-red-500">*</span></label>
+          <Controller
+            name="weight"
+            control={control}
+            render={({ field }) => (
+              <input
+                {...field}
+                type="number"
+                step="0.01"
+                className={`w-full border p-2 rounded ${errors.weight ? "border-red-500" : "border-gray-300"}`}
+              />
             )}
-          </div>
-        ))}
+          />
+          {errors.weight && <p className="text-red-500 text-sm mt-1">{errors.weight.message}</p>}
+        </div>
 
-        <button
-          type="submit"
-          className="w-full bg-black text-white p-2 rounded hover:bg-gray-800"
-        >
+        {/* Altura */}
+        <div>
+          <label className="block font-semibold">Altura (cm) <span className="text-red-500">*</span></label>
+          <Controller
+            name="height"
+            control={control}
+            render={({ field }) => (
+              <input
+                {...field}
+                type="number"
+                step="0.01"
+                className={`w-full border p-2 rounded ${errors.height ? "border-red-500" : "border-gray-300"}`}
+              />
+            )}
+          />
+          {errors.height && <p className="text-red-500 text-sm mt-1">{errors.height.message}</p>}
+        </div>
+
+        {/* Cintura */}
+        <div>
+          <label className="block font-semibold">Cintura (cm) <span className="text-red-500">*</span></label>
+          <Controller
+            name="waists"
+            control={control}
+            render={({ field }) => (
+              <input
+                {...field}
+                type="number"
+                step="0.01"
+                className={`w-full border p-2 rounded ${errors.waists ? "border-red-500" : "border-gray-300"}`}
+              />
+            )}
+          />
+          {errors.waists && <p className="text-red-500 text-sm mt-1">{errors.waists.message}</p>}
+        </div>
+
+        {/* Pecho */}
+        <div>
+          <label className="block font-semibold">Pecho (cm) <span className="text-red-500">*</span></label>
+          <Controller
+            name="chest"
+            control={control}
+            render={({ field }) => (
+              <input
+                {...field}
+                type="number"
+                step="0.01"
+                className={`w-full border p-2 rounded ${errors.chest ? "border-red-500" : "border-gray-300"}`}
+              />
+            )}
+          />
+          {errors.chest && <p className="text-red-500 text-sm mt-1">{errors.chest.message}</p>}
+        </div>
+
+        {/* Brazo derecho */}
+        <div>
+          <label className="block font-semibold">Brazo derecho (cm) <span className="text-red-500">*</span></label>
+          <Controller
+            name="rightarm"
+            control={control}
+            render={({ field }) => (
+              <input
+                {...field}
+                type="number"
+                step="0.01"
+                className={`w-full border p-2 rounded ${errors.rightarm ? "border-red-500" : "border-gray-300"}`}
+              />
+            )}
+          />
+          {errors.rightarm && <p className="text-red-500 text-sm mt-1">{errors.rightarm.message}</p>}
+        </div>
+
+        {/* Brazo izquierdo */}
+        <div>
+          <label className="block font-semibold">Brazo izquierdo (cm) <span className="text-red-500">*</span></label>
+          <Controller
+            name="leftarm"
+            control={control}
+            render={({ field }) => (
+              <input
+                {...field}
+                type="number"
+                step="0.01"
+                className={`w-full border p-2 rounded ${errors.leftarm ? "border-red-500" : "border-gray-300"}`}
+              />
+            )}
+          />
+          {errors.leftarm && <p className="text-red-500 text-sm mt-1">{errors.leftarm.message}</p>}
+        </div>
+
+        {/* Pierna derecha */}
+        <div>
+          <label className="block font-semibold">Pierna derecha (cm) <span className="text-red-500">*</span></label>
+          <Controller
+            name="rightleg"
+            control={control}
+            render={({ field }) => (
+              <input
+                {...field}
+                type="number"
+                step="0.01"
+                className={`w-full border p-2 rounded ${errors.rightleg ? "border-red-500" : "border-gray-300"}`}
+              />
+            )}
+          />
+          {errors.rightleg && <p className="text-red-500 text-sm mt-1">{errors.rightleg.message}</p>}
+        </div>
+
+        {/* Pierna izquierda */}
+        <div>
+          <label className="block font-semibold">Pierna izquierda (cm) <span className="text-red-500">*</span></label>
+          <Controller
+            name="leftleg"
+            control={control}
+            render={({ field }) => (
+              <input
+                {...field}
+                type="number"
+                step="0.01"
+                className={`w-full border p-2 rounded ${errors.leftleg ? "border-red-500" : "border-gray-300"}`}
+              />
+            )}
+          />
+          {errors.leftleg && <p className="text-red-500 text-sm mt-1">{errors.leftleg.message}</p>}
+        </div>
+
+        <button type="submit" className="w-full bg-black text-white p-2 rounded hover:bg-gray-800">
           Guardar Progreso
         </button>
       </form>

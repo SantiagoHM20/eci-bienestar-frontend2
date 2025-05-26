@@ -1,39 +1,102 @@
 import { useState } from "react";
-import { ArrowLeftIcon, ArrowRightIcon, PencilIcon, PlusIcon, TrashIcon, XMarkIcon, } from "@heroicons/react/24/solid";
+import { PencilIcon, PlusIcon, TrashIcon, XMarkIcon, } from "@heroicons/react/24/solid";
 import mancuernas from "/src/modules/gym-management/assets/images/mancuernas.png";
 import barra from "/src/modules/gym-management/assets/images/barra.jpg";
 import paralelas from "/src/modules/gym-management/assets/images/paralelas.png";
 import mancuernas2 from "/src/modules/gym-management/assets/images/mancuernas2.png";
 
-type Exercise = "" | "CARDIO" | "FLEXIBILIDAD" | "FUERZA" | "RESISTENCIA" | "TONIFICACION";
+type Exercise = "" | "CARDIO" | "FLEXIBILIDAD" | "FUERZA" | "RESISTENCIA" | "POTENCIA" | "RECUPERACION";
 
 const mockExercises = [
   {
-    name: "Aperturas con mancuernas",
+    name: "Puente de glúteos",
     images: [mancuernas, mancuernas2],
-    repetitions: 3,
-    sets: 1,
-    duration: 30,
+    repetitions: 10,
+    sets: 2,
+    duration: 10,
     type: "CARDIO" as Exercise,
-    muscleGroup: ["Piernas", "Pectorales"],
+    muscleGroup: ["GLUTEOS", "PIERNALES"],
   },
   {
-    name: "Press inclinado con barra",
+    name: "Press banca",
     images: [barra],
-    repetitions: 3,
-    sets: 1,
-    duration: 30,
-    type: "CARDIO" as Exercise,
-    muscleGroup: ["Pectorales", "Hombros"],
+    repetitions: 5,
+    sets: 2,
+    duration: 10,
+    type: "RESISTENCIA" as Exercise,
+    muscleGroup: ["PECHO"],
   },
   {
-    name: "Fondos en paralelas",
+    name: "Fondos",
+    images: [paralelas],
+    repetitions: 2,
+    sets: 2,
+    duration: 6,
+    type: "FUERZA" as Exercise,
+    muscleGroup: ["ESPALDA"],
+  },
+  {
+    name: "Twists rusos",
+    images: [mancuernas2],
+    repetitions: 2,
+    sets: 3,
+    duration: 3,
+    type: "FUERZA" as Exercise,
+    muscleGroup: ["HOMBROS"],
+  },
+  {
+    name: "Curl martillo",
+    images: [mancuernas],
+    repetitions: 4,
+    sets: 3,
+    duration: 2,
+    type: "POTENCIA" as Exercise,
+    muscleGroup: ["BICEPS"],
+  },
+  {
+    name: "Extensiones de tríceps",
+    images: [barra],
+    repetitions: 1,
+    sets: 3,
+    duration: 5,
+    type: "FUERZA" as Exercise,
+    muscleGroup: ["TRICEPS"],
+  },
+  {
+    name: "Elevaciones de piernas",
     images: [paralelas],
     repetitions: 3,
     sets: 1,
-    duration: 30,
-    type: "CARDIO" as Exercise,
-    muscleGroup: ["Pectorales", "Tríceps"],
+    duration: 1,
+    type: "RECUPERACION" as Exercise,
+    muscleGroup: ["ABDOMINALES"],
+  },
+  {
+    name: "Sentadillas",
+    images: [mancuernas2],
+    repetitions: 2,
+    sets: 2,
+    duration: 2,
+    type: "RESISTENCIA" as Exercise,
+    muscleGroup: ["PIERNALES"],
+  },
+  {
+    name: "Prensa de piernas",
+    images: [mancuernas],
+    repetitions: 5,
+    sets: 2,
+    duration: 1,
+    type: "POTENCIA" as Exercise,
+    muscleGroup: ["CUADRICEPS"],
+  },
+  {
+    name: "Crunches",
+    images: [barra],
+    repetitions: 3,
+    sets: 4,
+    duration: 3,
+    type: "RECUPERACION" as Exercise,
+    muscleGroup: ["GEMELOS"],
   },
 ];
 
@@ -101,7 +164,6 @@ export const ExercisesPage = () => {
   }
 
   setNewExercise({ name: "", image: "", repetitions: 0, sets: 0, duration: 0, type: "", muscleGroup: "" });
-  setImagePreview(null);
   setIsModalOpen(false);
   setIsEditing(false);
   setEditIndex(null);
@@ -110,7 +172,7 @@ export const ExercisesPage = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editIndex, setEditIndex] = useState<number | null>(null);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [] = useState<string | null>(null);
 
 
    return (
@@ -236,8 +298,6 @@ export const ExercisesPage = () => {
                 onChange={(e) => {
                   const file = e.target.files?.[0];
                   if (file) {
-                    const localUrl = URL.createObjectURL(file);
-                    setImagePreview(localUrl);
                     setNewExercise({ ...newExercise, image: file });
                   }
                 }}

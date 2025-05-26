@@ -1,5 +1,0 @@
-export enum SpecialityEnum {
-  GENERAL_MEDICINE = "GENERAL_MEDICINE",
-  DENTISTRY = "DENTISTRY",
-  PSYCHOLOGY = "PSYCHOLOGY",
-}

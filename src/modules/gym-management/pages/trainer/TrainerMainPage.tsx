@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCalendarDay, faClock, faUsers, faDumbbell, faRunning, faHeartbeat,faUser, faEnvelope,  } from "@fortawesome/free-solid-svg-icons";
+import { faCalendarDay, faClock, faUsers,faUser, faEnvelope,  } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
 
 interface GymSession {
@@ -33,7 +33,7 @@ function getLocalDateISO() {
 }
 
 const TrainerMainPage = () => {
-  const [userEmail, setUserEmail] = useState("sebastian.cortes@escuelaing.edu.co");
+  const userEmail = sessionStorage.getItem("email") || "";
 
   const [trainer, setTrainer] = useState<Trainer | null>(null);
   const [loadingTrainer, setLoadingTrainer] = useState(true);
