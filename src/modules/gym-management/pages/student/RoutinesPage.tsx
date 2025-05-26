@@ -1,6 +1,5 @@
 import { XMarkIcon } from "@heroicons/react/24/solid";
 import React from "react";
-import { useNavigate } from "react-router-dom";
 
 import pectorales from "/src/modules/gym-management/assets/images/pectorales.png";
 import dorsales from "/src/modules/gym-management/assets/images/dorsales.png";
@@ -149,7 +148,6 @@ const routinesByMuscle: Record<string, Exercise[]> = {
 };
 
 export default function RoutinesPage() {
-  const navigate = useNavigate();
   const [selectedMuscle, setSelectedMuscle] = React.useState<string | null>(null);
 
   return (

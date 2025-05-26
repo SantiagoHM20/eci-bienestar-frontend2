@@ -2,12 +2,10 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import Dashboard from "./common/dashboard";
 import Layout from "./common/layout/layout";
 import ForgotPassword from "./modules/auth/components/ForgotPassword";
-import { HealthRoutes } from "@modules/appointment-management/routes";
 import { GymRoutes } from "@modules/gym-management/routes";
 import { useAuth } from "./common/context";
 import { Role } from "./common/types";
 import { ProtectedRoute, Root } from "@common/components";
-import ExtracurricularClassesRoutes from "./modules/extracurricular-classes/routes";
 
 const MODULE_MAPPING = {
   health: "turnos",
@@ -34,7 +32,6 @@ const moduleColors = {
 // Componentes de módulos
 const ModuleTemplate: React.FC<{ title: string; color: string }> = ({
   title,
-  color,
 }) => (
   <div className="container mx-auto px-4 py-8">
     <h1 className="text-3xl font-bold text-gray-800 mb-6">{title}</h1>
@@ -86,7 +83,10 @@ function App() {
               onNotificationsClick={handleNotificationsClick}
               showSidebar={user?.role === Role.ADMINISTRATOR}
             >
-              <HealthRoutes />
+              <ModuleTemplate
+                title="Gestión de Turnos"
+                color={moduleColors.health}
+              />
             </Layout>
           }
         />
@@ -117,7 +117,10 @@ function App() {
               activeModule={MODULE_MAPPING.extracurricular}
               onNotificationsClick={handleNotificationsClick}
             >
-              <ExtracurricularClassesRoutes userRole="student" />
+              <ModuleTemplate
+                title="Clases Extracurriculares"
+                color={moduleColors.recreation}
+              />
             </Layout>
           }
         />

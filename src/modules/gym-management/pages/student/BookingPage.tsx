@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 
 const mockSessions = [
   { id: "1", coachName: "Diana", date: "2025-05-25", startTime: "10:00", endTime: "11:00", capacity: 10, currentCapacity: 5 },
@@ -15,7 +15,7 @@ const BookingPage = () => {
   const [filterEndTime, setFilterEndTime] = useState("");
 
   const [reservingId, setReservingId] = useState<string | null>(null);
-  const [reservationMessage, setReservationMessage] = useState<string | null>(null);
+  const [] = useState<string | null>(null);
 
   const filterByTimeRange = (start: string, end: string, session: any) => {
     if (!start && !end) return true;
@@ -41,7 +41,6 @@ const BookingPage = () => {
 
   const handleReserve = async (sessionId: string) => {
     setReservingId(sessionId);
-    setReservationMessage(null);
 
     try {
       const response = await fetch(`/api/sessions/${sessionId}/reserve`, {
@@ -53,11 +52,9 @@ const BookingPage = () => {
 
       if (!response.ok) throw new Error("Error al reservar la sesión");
 
-      setReservationMessage("✅ ¡Sesión reservada con éxito!");
       // Opcional: recargar datos o actualizar capacidad
     } catch (error) {
       console.error(error);
-      setReservationMessage("❌ No se pudo reservar la sesión.");
     } finally {
       setReservingId(null);
     }

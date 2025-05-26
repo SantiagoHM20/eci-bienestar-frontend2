@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowLeftIcon, ArrowRightIcon, PencilIcon, PlusIcon, TrashIcon, XMarkIcon, } from "@heroicons/react/24/solid";
+import { PencilIcon, PlusIcon, TrashIcon, XMarkIcon, } from "@heroicons/react/24/solid";
 import mancuernas from "/src/modules/gym-management/assets/images/mancuernas.png";
 import barra from "/src/modules/gym-management/assets/images/barra.jpg";
 import paralelas from "/src/modules/gym-management/assets/images/paralelas.png";
@@ -164,7 +164,6 @@ export const ExercisesPage = () => {
   }
 
   setNewExercise({ name: "", image: "", repetitions: 0, sets: 0, duration: 0, type: "", muscleGroup: "" });
-  setImagePreview(null);
   setIsModalOpen(false);
   setIsEditing(false);
   setEditIndex(null);
@@ -173,7 +172,7 @@ export const ExercisesPage = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editIndex, setEditIndex] = useState<number | null>(null);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [] = useState<string | null>(null);
 
 
    return (
@@ -299,8 +298,6 @@ export const ExercisesPage = () => {
                 onChange={(e) => {
                   const file = e.target.files?.[0];
                   if (file) {
-                    const localUrl = URL.createObjectURL(file);
-                    setImagePreview(localUrl);
                     setNewExercise({ ...newExercise, image: file });
                   }
                 }}

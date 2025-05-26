@@ -4,7 +4,6 @@ import { HeroUIProvider } from "@heroui/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import "./index.css";
 import App from "./App.tsx";
-import "@modules/appointment-management/utils/icon.ts";
 import { AuthProvider } from "@common/context";
 import { BrowserRouter } from "react-router-dom";
 
