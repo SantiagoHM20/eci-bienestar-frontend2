@@ -13,9 +13,10 @@ jobs:
       contents: read
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Set up Node.js version
+      - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '20.x'
@@ -25,13 +26,11 @@ jobs:
           npm ci
           npm run build
 
-      # 👇 Sube solo el resultado del build
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: build
-          path: ./build
-          # Si usas Vite o Angular, cambia por ./dist
+          name: dist
+          path: ./dist
 
   deploy:
     runs-on: ubuntu-latest
@@ -44,8 +43,8 @@ jobs:
       - name: Download build artifact
         uses: actions/download-artifact@v4
         with:
-          name: build
-          path: ./build
+          name: dist
+          path: ./dist
 
       - name: Login to Azure
         uses: azure/login@v2
@@ -58,4 +57,9 @@ jobs:
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'SPTIFRONT'
-          package: './build'
+          package: './dist'
+
+      - name: Post Login to Azure
+        if: always()
+        run: |
+          az account clear
