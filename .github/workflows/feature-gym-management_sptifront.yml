@@ -21,10 +21,13 @@ jobs:
         with:
           node-version: '20.x'
 
-      - name: Install dependencies and build
+      - name: Clean install dependencies and build (with Rollup fix)
         run: |
-          npm ci
+          rm -rf node_modules package-lock.json
+          npm install
           npm run build
+
+
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
@@ -63,3 +66,4 @@ jobs:
         if: always()
         run: |
           az account clear
+
