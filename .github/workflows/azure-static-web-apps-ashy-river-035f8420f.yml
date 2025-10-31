@@ -32,6 +32,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Fix Rollup native binaries issue
+        run: |
+          npm install rollup@latest --force
+          npm rebuild rollup --verbose
+
       - name: Build app
         run: npm run build
 
@@ -41,10 +46,9 @@ jobs:
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_ASHY_RIVER_035F8420F }}
           action: "upload"
-          app_location: "/" 
-          api_location: "" 
-          output_location: "dist"
-          github_id_token: ${{ steps.idtoken.outputs.result }}
+          app_location: "/" # Ruta de tu app
+          api_location: "" # No hay API
+          output_location: "dist" # Carpeta que genera Vite
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
