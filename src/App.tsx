@@ -351,24 +351,22 @@ function App() {
             </div>
 
             {/* Campo de rol para login y registro */}
-            {(mode === 'register' || mode === 'login') && (
-              <div>
-                <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-2">
-                  Rol
-                </label>
-                <select
-                  id="role"
-                  name="role"
-                  value={formData.role}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#850000] focus:border-transparent transition-all outline-none bg-white"
-                >
-                  <option value="STUDENT">Estudiante</option>
-                  <option value="TRAINER">Entrenador</option>
-                </select>
-              </div>
-            )}
+            <div>
+              <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-2">
+                Rol
+              </label>
+              <select
+                id="role"
+                name="role"
+                value={formData.role}
+                onChange={handleChange}
+                required
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#850000] focus:border-transparent transition-all outline-none bg-white"
+              >
+                <option value="STUDENT">Estudiante</option>
+                <option value="TRAINER">Entrenador</option>
+              </select>
+            </div>
 
             <button
               type="submit"
