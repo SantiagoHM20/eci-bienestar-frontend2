@@ -1,3 +1,7 @@
+"engines": {
+  "node": ">=20"
+}
+
 {
   "name": "a",
   "private": true,
