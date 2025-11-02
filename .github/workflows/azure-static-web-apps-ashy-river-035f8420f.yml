@@ -1,4 +1,4 @@
-name: Azure Static Web Apps CI/CD (Debug)
+name: Azure Static Web Apps CI/CD
 
 on:
   push:
@@ -13,66 +13,57 @@ jobs:
   build_and_deploy_job:
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
     runs-on: ubuntu-latest
-    name: Build and Deploy Job (Debug)
-
+    name: Build and Deploy Job
     steps:
-      - name: 🧩 Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           submodules: true
           lfs: false
 
-      - name: 🧰 Debug Info - Environment
-        run: |
-          echo "Node version:"
-          node -v || echo "Node not installed"
-          echo "NPM version:"
-          npm -v || echo "NPM not installed"
-          echo "Current directory:"
-          pwd
-          echo "Branch:"
-          echo "${{ github.ref }}"
-          echo "Event name: ${{ github.event_name }}"
-          echo "Action: ${{ github.event.action }}"
-
-      - name: 🧱 Set up Node.js
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20.x'
           cache: 'npm'
 
-      - name: 🧹 Clean install dependencies
+      - name: Clean install dependencies
         run: |
-          echo "Cleaning node_modules and lock file..."
           rm -rf node_modules package-lock.json
-          echo "Installing dependencies..."
           npm install
-        continue-on-error: false
 
-      - name: 📦 List installed dependencies
+      - name: Build
+        run: npm run build
+
+      # 🧩 DEBUG 1: Verificar carpeta de salida
+      - name: Check dist folder
         run: |
-          echo "Listing top-level installed dependencies..."
-          npm list --depth=0 || true
+          echo "🔍 Checking build output..."
+          if [ ! -d "dist" ]; then
+            echo "❌ Folder 'dist' not found!"
+            ls -la
+            exit 1
+          fi
+          echo "✅ Folder 'dist' exists with content:"
+          ls -la dist
 
-      - name: 🛠️ Build project
+      # 🧩 DEBUG 2: Verificar token recibido
+      - name: Debug Azure Token Presence
         run: |
-          echo "Starting build process..."
-          npm run build || { echo "Build failed ❌"; exit 1; }
-        env:
-          NODE_ENV: production
+          if [ -z "${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_ASHY_RIVER_035F8420F }}" ]; then
+            echo "❌ ERROR: Token is empty or not set in GitHub secrets."
+            exit 1
+          else
+            echo "✅ Token detected (not printing for security)."
+          fi
 
-      - name: 📂 Show dist folder
+      # 🧩 DEBUG 3: Mostrar nombre del evento y rama
+      - name: Debug event info
         run: |
-          echo "Contents of the dist folder after build:"
-          ls -la dist || echo "No dist folder found ❌"
+          echo "🧾 Event: ${{ github.event_name }}"
+          echo "🔀 Branch: ${{ github.ref }}"
+          echo "👤 Actor: ${{ github.actor }}"
 
-      - name: 🧠 Check Azure deployment variables
-        run: |
-          echo "Azure Static Web Apps API Token length: $(echo '${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}' | wc -c)"
-          echo "App location: /"
-          echo "Output location: dist"
-        shell: bash
-
+      # 🚀 DEPLOY REAL
       - name: Deploy to Azure Static Web Apps
         uses: Azure/static-web-apps-deploy@v1
         with:
@@ -81,23 +72,12 @@ jobs:
           app_location: "/"
           output_location: "dist"
 
-        continue-on-error: false
-
-      - name: 🧾 Debug final state
-        if: always()
-        run: |
-          echo "Workflow completed with status: ${{ job.status }}"
-          echo "Checking workspace content:"
-          ls -la
-
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
     runs-on: ubuntu-latest
     name: Close Pull Request Job
-
     steps:
-      - name: 🧹 Close Pull Request Deployment
+      - name: Close Pull Request
         uses: Azure/static-web-apps-deploy@v1
         with:
           action: "close"
-
