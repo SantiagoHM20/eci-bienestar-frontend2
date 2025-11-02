@@ -1,4 +1,4 @@
-name: Azure Static Web Apps CI/CD
+name: Azure Static Web Apps CI/CD (Debug)
 
 on:
   push:
@@ -13,43 +13,89 @@ jobs:
   build_and_deploy_job:
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
     runs-on: ubuntu-latest
-    name: Build and Deploy Job
+    name: Build and Deploy Job (Debug)
+
     steps:
-      - uses: actions/checkout@v4
+      - name: 🧩 Checkout repository
+        uses: actions/checkout@v4
         with:
           submodules: true
           lfs: false
-      
-      - name: Set up Node.js
+
+      - name: 🧰 Debug Info - Environment
+        run: |
+          echo "Node version:"
+          node -v || echo "Node not installed"
+          echo "NPM version:"
+          npm -v || echo "NPM not installed"
+          echo "Current directory:"
+          pwd
+          echo "Branch:"
+          echo "${{ github.ref }}"
+          echo "Event name: ${{ github.event_name }}"
+          echo "Action: ${{ github.event.action }}"
+
+      - name: 🧱 Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20.x'
-          cache: 'npm' 
-      
-      - name: Clean install dependencies
-        run: |
-          rm -rf node_modules package-lock.json
-          npm install
-      
-      - name: Build
-        run: npm run build
+          cache: 'npm'
 
-      - name: Deploy to Azure Static Web Apps
+      - name: 🧹 Clean install dependencies
+        run: |
+          echo "Cleaning node_modules and lock file..."
+          rm -rf node_modules package-lock.json
+          echo "Installing dependencies..."
+          npm install
+        continue-on-error: false
+
+      - name: 📦 List installed dependencies
+        run: |
+          echo "Listing top-level installed dependencies..."
+          npm list --depth=0 || true
+
+      - name: 🛠️ Build project
+        run: |
+          echo "Starting build process..."
+          npm run build || { echo "Build failed ❌"; exit 1; }
+        env:
+          NODE_ENV: production
+
+      - name: 📂 Show dist folder
+        run: |
+          echo "Contents of the dist folder after build:"
+          ls -la dist || echo "No dist folder found ❌"
+
+      - name: 🧠 Check Azure deployment variables
+        run: |
+          echo "Azure Static Web Apps API Token length: $(echo '${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}' | wc -c)"
+          echo "App location: /"
+          echo "Output location: dist"
+        shell: bash
+
+      - name: 🚀 Deploy to Azure Static Web Apps
         uses: Azure/static-web-apps-deploy@v1
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
           action: "upload"
           app_location: "/"
           output_location: "dist"
+        continue-on-error: false
+
+      - name: 🧾 Debug final state
+        if: always()
+        run: |
+          echo "Workflow completed with status: ${{ job.status }}"
+          echo "Checking workspace content:"
+          ls -la
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
     runs-on: ubuntu-latest
     name: Close Pull Request Job
+
     steps:
-      - name: Close Pull Request
+      - name: 🧹 Close Pull Request Deployment
         uses: Azure/static-web-apps-deploy@v1
         with:
           action: "close"
-
-
