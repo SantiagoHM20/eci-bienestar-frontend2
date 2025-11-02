@@ -1,12 +1,11 @@
-"engines": {
-  "node": ">=20"
-},
-
 {
   "name": "a",
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
