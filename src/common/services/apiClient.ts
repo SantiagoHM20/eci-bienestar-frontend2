@@ -12,6 +12,22 @@ const apiClient: AxiosInstance = axios.create({
   },
 });
 
+// Request interceptor: attach Authorization header when token is available
+apiClient.interceptors.request.use((config) => {
+  try {
+    const token = localStorage.getItem("token");
+    if (token && config && config.headers) {
+      // If header already present, don't overwrite
+      if (!config.headers["Authorization"] && !config.headers.common?.Authorization) {
+        config.headers["Authorization"] = `Bearer ${token}`;
+      }
+    }
+  } catch (err) {
+    console.warn("apiClient: could not read token from localStorage", err);
+  }
+  return config;
+});
+
 apiClient.interceptors.response.use(
   (response: AxiosResponse): AxiosResponse => {
     console.log("Response:", JSON.stringify(response.data, null, 2));
