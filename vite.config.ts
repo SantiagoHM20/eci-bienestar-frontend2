@@ -16,5 +16,15 @@ export default defineConfig({
   server: {
     port: 3000,
     open: true,
+    // Dev proxy to avoid CORS issues when calling the gym backend in development.
+    // Routes starting with /api will be forwarded to the target host used in Postman.
+    proxy: {
+      '/api': {
+        target: 'https://forkgymnasiumservice-e5g7f5fscqbgb0ff.canadacentral-01.azurewebsites.net',
+        changeOrigin: true,
+        secure: true,
+        rewrite: (path) => path.replace(/^\/api/, '/api'),
+      },
+    },
   }
 });

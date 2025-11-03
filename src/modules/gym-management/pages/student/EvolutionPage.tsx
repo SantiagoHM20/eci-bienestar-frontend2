@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import apiClient from "@common/services/apiClient";
+import { useAuth } from "@common/context";
 import { Chart as ChartJS, BarElement, CategoryScale, LinearScale, Title, Tooltip, Legend } from 'chart.js';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
@@ -23,22 +24,24 @@ interface ProgressRecord {
 const EvolutionPage = () => {
   const [records, setRecords] = useState<ProgressRecord[]>([]);
   const [loading, setLoading] = useState(true);
+  const { user: authUser } = useAuth();
 
   useEffect(() => {
     const fetchProgressRecords = async () => {
       try {
-        const email = sessionStorage.getItem("email");
+        const sessionEmail = sessionStorage.getItem("email");
+        const email = authUser?.email ?? sessionEmail;
         if (!email) throw new Error("Email no encontrado en sesión.");
 
-        // Obtener datos del usuario
-        const userResponse = await axios.get(`https://ecibienestar-age6hsb9g4dmegea.canadacentral-01.azurewebsites.net/api/user/users/email?email=${encodeURIComponent(email)}`);
+        // Obtener datos del usuario por email
+        const userResponse = await apiClient.get(`/user/users/email?email=${encodeURIComponent(email)}`);
         const user = userResponse.data.data;
 
         if (!user || !user.id) throw new Error("Usuario no encontrado.");
 
-        const response = await axios.get(`https://ecibienestar-age6hsb9g4dmegea.canadacentral-01.azurewebsites.net/api/user/progress/${user.id}`);
+        const response = await apiClient.get(`/user/progress/${user.id}`);
 
-        setRecords(response.data.data);
+        setRecords(response.data.data || []);
       } catch (error) {
         console.error("Error al cargar los registros:", error);
       } finally {

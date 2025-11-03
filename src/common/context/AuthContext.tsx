@@ -25,6 +25,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   }, []);
 
   const login = (user: User, token: string, refreshToken: string) => {
+    // Debug log (mask token parts)
+    const maskedToken = token ? `${token.substring(0, 8)}...(${token.length} chars)` : null;
+    const maskedRefresh = refreshToken
+      ? `${refreshToken.substring(0, 8)}...(${refreshToken.length} chars)`
+      : null;
+    console.log("[AuthContext] login called", { user, token: maskedToken, refreshToken: maskedRefresh });
+
     setUser(user);
     setToken(token);
     setRefreshToken(refreshToken);

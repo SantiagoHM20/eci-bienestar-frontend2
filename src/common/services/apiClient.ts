@@ -1,8 +1,8 @@
 import axios, { AxiosInstance, AxiosResponse, AxiosError } from "axios";
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ??
-  "https://suoeltmtp2.execute-api.us-east-1.amazonaws.com";
+// In development we proxy /api to the target host via Vite dev server (see vite.config.ts).
+// Use VITE_API_BASE_URL when provided (production); otherwise default to '/api' so dev proxy works.
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '/api';
 
 const apiClient: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,

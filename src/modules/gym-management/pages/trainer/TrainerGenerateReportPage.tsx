@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import apiClient from "@common/services/apiClient";
 
 const mockSessions = [
   { id: "101", label: "Sesión de Cardio" },
@@ -20,14 +21,12 @@ export default function TrainerGenerateReportPage() {
 
   // Obtener usuarios reales
   useEffect(() => {
-    fetch("https://ecibienestar-age6hsb9g4dmegea.canadacentral-01.azurewebsites.net/api/trainer/users/role/STUDENT")
-        .then((res) => res.json())
-        .then((data) => {
-          setFilteredUsers(data);
-        })
-        .catch((err) => {
-          console.error("Error al cargar usuarios:", err);
-        });
+    apiClient
+      .get("/trainer/users/role/STUDENT")
+      .then((res) => setFilteredUsers(res.data?.data || []))
+      .catch((err) => {
+        console.error("Error al cargar usuarios:", err);
+      });
   }, []);
 
   const handleAddEntry = () => {
@@ -122,18 +121,8 @@ export default function TrainerGenerateReportPage() {
     };
 
     try {
-      const res = await fetch(
-          "https://ecibienestar-age6hsb9g4dmegea.canadacentral-01.azurewebsites.net/api/trainer/reports",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(reportData),
-          }
-      );
-
-      if (!res.ok) throw new Error("Error al generar el reporte");
+      const res = await apiClient.post("/trainer/reports", reportData);
+      if (!res || (res.status && res.status >= 400)) throw new Error("Error al generar el reporte");
 
       alert("Reporte generado exitosamente");
       setReportEntries([]);

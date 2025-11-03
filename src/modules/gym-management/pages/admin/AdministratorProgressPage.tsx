@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import apiClient from "@common/services/apiClient";
 import { Bar } from "react-chartjs-2";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
@@ -42,10 +42,8 @@ const AdministratorProgressPage = () => {
 
   const fetchUsers = async () => {
     try {
-      const res = await axios.get(
-        "https://ecibienestar-age6hsb9g4dmegea.canadacentral-01.azurewebsites.net/api/trainer/users"
-      );
-      setUsers(res.data.data);
+      const res = await apiClient.get("/trainer/users");
+      setUsers(res.data?.data || []);
     } catch (err) {
       console.error("Error al cargar usuarios", err);
     }
@@ -54,10 +52,8 @@ const AdministratorProgressPage = () => {
   const fetchProgress = async (userId: string) => {
     setLoading(true);
     try {
-      const res = await axios.get(
-        `https://ecibienestar-age6hsb9g4dmegea.canadacentral-01.azurewebsites.net/api/user/progress/${userId}`
-      );
-      setRecords(res.data.data);
+      const res = await apiClient.get(`/user/progress/${userId}`);
+      setRecords(res.data?.data || []);
     } catch (err) {
       console.error("Error al cargar progreso", err);
     }

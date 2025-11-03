@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@common/context";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import apiClient from "@/common/services/apiClient";
 
 function GymRedirect() {
     const { user } = useAuth();
@@ -19,15 +20,19 @@ function GymRedirect() {
             console.log("Usuario autenticado:", user);
 
             try {
-                const email = encodeURIComponent(user.email);
-                const getUrl = `https://ecibienestar-age6hsb9g4dmegea.canadacentral-01.azurewebsites.net/api/user/users/email?email=${email}`;
-                console.log("Consultando usuario en backend:", getUrl);
+                const encodedEmail = encodeURIComponent(user.email);
+                console.log("Consultando usuario en backend (apiClient):", `/user/users/email?email=${encodedEmail}`);
 
-                const response = await axios.get(getUrl);
-                const userData = response.data?.data;
+                // Use central apiClient so the baseURL comes from env/config and matches other service calls
+                const response = await apiClient.get(`/user/users/email`, { params: { email: user.email } });
+                const userData = response.data?.data ?? null;
 
-                sessionStorage.setItem("email", userData.email);
-                
+                if (userData && userData.email) {
+                    sessionStorage.setItem("email", userData.email);
+                } else {
+                    console.warn("Respuesta del backend: user data vacía o no contiene email", response.data);
+                }
+
                 console.log("Respuesta del backend:", userData);
 
                 // Redirección por rol
@@ -56,10 +61,18 @@ function GymRedirect() {
                         data: error.response?.data,
                         url: error.config?.url,
                     });
+
+                    // Si el backend responde 404 (usuario no encontrado), tratamos como usuario no registrado
+                    if (error.response?.status === 404) {
+                        console.warn("Usuario no encontrado en backend — redirigiendo a registro de estudiante");
+                        navigate("student/index", { replace: true });
+                        return;
+                    }
                 } else {
                     console.error("Error inesperado al verificar el registro del usuario:", error);
                 }
 
+                // Para otros errores mostramos not-found
                 navigate("/not-found", { replace: true });
             } finally {
                 setChecked(true);

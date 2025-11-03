@@ -49,7 +49,7 @@ const ModuleTemplate: React.FC<{ title: string; color: string }> = ({
 type AuthMode = 'login' | 'register';
 
 function App() {
-  const { user } = useAuth();
+  const { user, login: authLogin } = useAuth();
   const [mode, setMode] = useState<AuthMode>('login');
   const [formData, setFormData] = useState({
     name: '',
@@ -57,7 +57,9 @@ function App() {
     password: '',
     role: 'STUDENT',
   });
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  // NOTE: useAuth().user is used to determine authentication state.
+  // The local isAuthenticated state was removed to avoid diverging
+  // auth sources (caused routes to render login again after context login).
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -66,15 +68,41 @@ function App() {
     try {
       if (mode === 'login') {
         const res = await login(formData.email, formData.password, formData.role);
+        console.log('[App] login service result', res);
         if (res.ok) {
-          setIsAuthenticated(true);
+          // Expecting token and user in res.data
+          const payload = res.data ?? {};
+          const token = payload.token || payload.data?.token || '';
+          const userFromApi = payload.user || payload.data?.user || payload;
+
+          // Map API user to app User shape
+          const mappedUser = {
+            id: userFromApi?.id || userFromApi?.userId || '',
+            fullName: userFromApi?.name || userFromApi?.fullName || '',
+            email: userFromApi?.email || '',
+            role: userFromApi?.role || 'STUDENT',
+            speciality: null,
+          };
+
+          console.log('[App] Logging in to AuthContext with', { mappedUser, tokenLength: token?.length });
+          authLogin(mappedUser as any, token, '');
         } else {
           setError('Credenciales inválidas');
         }
       } else {
         const res = await register(formData.name, formData.email, formData.password, formData.role);
         if (res.ok) {
-          setIsAuthenticated(true);
+          const payload = res.data ?? {};
+          const token = payload.token || '';
+          const userFromApi = payload.user || payload;
+          const mappedUser = {
+            id: userFromApi?.id || '',
+            fullName: userFromApi?.name || userFromApi?.fullName || '',
+            email: userFromApi?.email || '',
+            role: userFromApi?.role || 'STUDENT',
+            speciality: null,
+          };
+          authLogin(mappedUser as any, token, '');
         } else {
           setError('Error al registrar');
         }
@@ -103,7 +131,8 @@ function App() {
     // Aquí iría la lógica para mostrar notificaciones
   };
 
-  if (isAuthenticated) {
+  // Render the protected routes when the auth context has a user.
+  if (user) {
     return (
       <Routes>
         {/* Ruta inicial - login */}

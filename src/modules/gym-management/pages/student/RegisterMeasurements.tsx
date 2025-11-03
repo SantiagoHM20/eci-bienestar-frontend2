@@ -2,7 +2,8 @@ import { useForm, Controller } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import apiClient from "@/common/services/apiClient";
+import { useAuth } from "@/common/context";
 
 // Validación del formulario con Yup
 const schema = yup.object().shape({
@@ -56,33 +57,64 @@ const RegisterMeasurements = () => {
     },
   });
 
-  const onSubmit = async (data: any) => {
-    const email = sessionStorage.getItem("email");
-    
-    const getUrl = `https://ecibienestar-age6hsb9g4dmegea.canadacentral-01.azurewebsites.net/api/user/users/email?email=${email}`;
-    console.log("Consultando usuario en backend:", getUrl);
+  const navigate = useNavigate();
+  const { user } = useAuth();
 
-    const response = await axios.get(getUrl);
+  const onSubmit = async (data: any) => {
+    // Prefer sessionStorage email, fallback to authenticated user email from context
+    const sessionEmail = sessionStorage.getItem("email");
+    const email = sessionEmail ?? user?.email ?? null;
+
+    if (!email) {
+      console.error("No se encontró el email del usuario (sessionStorage ni auth). Abrupting.");
+      alert("No se pudo obtener el email del usuario. Intenta cerrar sesión e ingresar de nuevo.");
+      return;
+    }
+
+    const encodedEmail = encodeURIComponent(email);
+    console.log("Consultando usuario en backend (apiClient):", `/user/users/email?email=${encodedEmail}`);
+
+    let response;
+    try {
+      response = await apiClient.get(`/user/users/email`, { params: { email } });
+    } catch (err) {
+      console.error("Error al consultar usuario por email:", err);
+      alert("No fue posible verificar el usuario en el servicio de seguimiento. Intenta de nuevo más tarde.");
+      return;
+    }
+
     const userData = response.data?.data;
+
+    if (!userData) {
+      console.error("Usuario no encontrado en el backend tras la consulta por email.", response.data);
+      alert("No se encontró información del usuario en el servicio de seguimiento. Contacta al administrador.");
+      return;
+    }
 
     sessionStorage.setItem("height", data.height);
     sessionStorage.setItem("weight", data.weight);
 
     console.log("Respuesta del backend:", userData);
     console.log("id del usuario:", userData.id);
-    const putUrl = `https://ecibienestar-age6hsb9g4dmegea.canadacentral-01.azurewebsites.net/api/users/${userData.id}`;
-    console.log("Actualizando usuario en backend:", putUrl);
-    await axios.put(putUrl, {
-      id: userData.id,
-      name: userData.name,
-      email: userData.email,
-      password: userData.password,
-      role: userData.role,
-      gender: data.gender,
-      registered: true,
-      registrationDate: new Date().toISOString().split("T")[0]
-    });
-    console.log("Usuario actualizado correctamente");
+    const putUrl = `/users/${userData.id}`;
+    console.log("Actualizando usuario en backend (apiClient):", putUrl);
+    try {
+      await apiClient.put(putUrl, {
+        id: userData.id,
+        name: userData.name,
+        email: userData.email,
+        password: userData.password,
+        role: userData.role,
+        gender: data.gender,
+        registered: true,
+        registrationDate: new Date().toISOString().split("T")[0]
+      });
+      console.log("Usuario actualizado correctamente");
+    } catch (putErr) {
+      console.error("Error al actualizar usuario en backend:", putErr);
+      alert("No fue posible actualizar el usuario. Intenta de nuevo más tarde.");
+      return;
+    }
 
     alert("Datos registrados correctamente");
     console.log(data);
@@ -90,8 +122,6 @@ const RegisterMeasurements = () => {
   };
 
   const gender = watch("gender");
-
-  const navigate = useNavigate();
 
   return (
     <div className="p-6 max-w-2xl mx-auto space-y-6">

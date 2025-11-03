@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { FaUser, FaDumbbell } from "react-icons/fa";
-import axios from "axios";
+import apiClient from "@/common/services/apiClient";
+import { useAuth } from "@/common/context";
 
 const StudentMainPage = () => {
     const [reservations, setReservations] = useState<any[]>([]);
@@ -8,17 +9,18 @@ const StudentMainPage = () => {
     const [userRoutine, setUserRoutine] = useState<any>(null);
     const [showRoutineDetail, setShowRoutineDetail] = useState(false);
 
-    const userId = "6832c304489cf8565c0ac37d";
+    const { user } = useAuth();
+    // Prefer authenticated user id; fallback to a hardcoded id only as last resort
+    const fallbackUserId = "6832c304489cf8565c0ac37d";
+    const userId = user?.id ?? fallbackUserId;
 
     useEffect(() => {
         const fetchReservations = async () => {
             try {
-                const response = await fetch(
-                    `https://ecibienestar-age6hsb9g4dmegea.canadacentral-01.azurewebsites.net/api/user/reservations/user/${userId}`
-                );
-                const data = await response.json();
+                const res = await apiClient.get(`/user/reservations/user/${userId}`);
+                const data = res.data;
 
-                if (data.success && Array.isArray(data.data)) {
+                if (data?.success && Array.isArray(data.data)) {
                     console.log("🔎 Todas las reservas del usuario:", data.data);
 
                     const today = new Date().toISOString().split("T")[0];
@@ -39,17 +41,11 @@ const StudentMainPage = () => {
 
         const fetchLatestProgress = async () => {
             try {
-                const email = sessionStorage.getItem("email");
-                if (!email) return;
+                // Use authenticated user id when available
+                const idToUse = user?.id ?? null;
+                if (!idToUse) return;
 
-                const user = await axios.get(
-                    `https://ecibienestar-age6hsb9g4dmegea.canadacentral-01.azurewebsites.net/api/user/users/email?email=${encodeURIComponent(email)}`
-                );
-                const userId = user.data?.data?.id;
-
-                const response = await axios.get(
-                    `https://ecibienestar-age6hsb9g4dmegea.canadacentral-01.azurewebsites.net/api/user/progress/${userId}`
-                );
+                const response = await apiClient.get(`/user/progress/${idToUse}`);
                 const lastProgress = response.data?.data?.slice(-1)[0];
 
                 if (lastProgress) {
@@ -80,11 +76,9 @@ const StudentMainPage = () => {
 
         const fetchUserRoutine = async (routineId: string) => {
             try {
-                const response = await fetch(
-                    `https://ecibienestar-age6hsb9g4dmegea.canadacentral-01.azurewebsites.net/api/user/routines/${routineId}`
-                );
-                const result = await response.json();
-                if (result.success) {
+                const res = await apiClient.get(`/user/routines/${routineId}`);
+                const result = res.data;
+                if (result?.success) {
                     setUserRoutine(result.data);
                 }
             } catch (error) {

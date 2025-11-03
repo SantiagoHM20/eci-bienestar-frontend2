@@ -2,7 +2,8 @@ import { useForm, Controller } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-import axios from "axios";
+import apiClient from "@/common/services/apiClient";
+import { useAuth } from "@/common/context";
 
 // Validación con Yup
 const schema = yup.object().shape({
@@ -77,20 +78,41 @@ const BodyMeasurements = () => {
   });
 
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const onSubmit = async (data: FormData) => {
-    const email = sessionStorage.getItem("email");
-    
-    const getUrl = `https://ecibienestar-age6hsb9g4dmegea.canadacentral-01.azurewebsites.net/api/user/users/email?email=${email}`;
-    console.log("Consultando usuario en backend:", getUrl);
+    const sessionEmail = sessionStorage.getItem("email");
+    const email = sessionEmail ?? user?.email ?? null;
 
-    const response = await axios.get(getUrl);
+    if (!email) {
+      console.error("No se encontró email para registrar medidas");
+      alert("No se pudo obtener el email del usuario. Intenta cerrar sesión e ingresar de nuevo.");
+      return;
+    }
+
+    const encodedEmail = encodeURIComponent(email);
+    console.log("Consultando usuario en backend (apiClient):", `/user/users/email?email=${encodedEmail}`);
+
+    let response;
+    try {
+      response = await apiClient.get(`/user/users/email`, { params: { email } });
+    } catch (err) {
+      console.error("Error al consultar usuario por email en BodyMeasurements:", err);
+      alert("No fue posible verificar el usuario en el servicio de seguimiento. Intenta de nuevo más tarde.");
+      return;
+    }
+
     const userData = response.data?.data;
     console.log("Respuesta del backend:", userData);
-    
-    const postUrl = `https://ecibienestar-age6hsb9g4dmegea.canadacentral-01.azurewebsites.net/api/user/progress`;
-    console.log("Registrando medidas en backend:", postUrl);
 
+    if (!userData) {
+      console.error("Usuario no encontrado al intentar registrar medidas", response.data);
+      alert("No se encontró información del usuario. Contacta al administrador.");
+      return;
+    }
+
+    const postUrl = `/user/progress`;
+    console.log("Registrando medidas en backend (apiClient):", postUrl);
     console.log("waists:", data.waists);
     console.log("chest:", data.chest);
     console.log("rightarm:", data.rightarm);
@@ -98,7 +120,8 @@ const BodyMeasurements = () => {
     console.log("rightleg:", data.rightleg);
     console.log("leftleg:", data.leftleg);
 
-    await axios.post(postUrl, {
+    try {
+      await apiClient.post(postUrl, {
       userId: userData.id,
       routine: {
         id: "68334f5a28573362a4c2b825",
@@ -118,8 +141,13 @@ const BodyMeasurements = () => {
       leftarm: data.leftarm,
       rightleg: data.rightleg,
       leftleg: data.leftleg,
-    });
-    console.log("Medidas registradas:", data);
+      });
+      console.log("Medidas registradas:", data);
+    } catch (err) {
+      console.error("Error al registrar medidas en backend:", err);
+      alert("No fue posible registrar las medidas. Intenta de nuevo más tarde.");
+      return;
+    }
 
     alert("Datos registrados correctamente");
     console.log(data);

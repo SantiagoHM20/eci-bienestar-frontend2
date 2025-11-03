@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-import axios from "axios";
+import apiClient from "@common/services/apiClient";
+import { useAuth } from "@common/context";
 
 // ✅ Validación
 const schema = yup.object().shape({
@@ -43,6 +44,7 @@ interface FormData {
 const RegisterProgressPages = () => {
   const [lastRecord, setLastRecord] = useState<FormData | null>(null);
   const [routines, setRoutines] = useState<Routine[]>([]);
+  const { user: authUser } = useAuth();
 
   const {
     handleSubmit,
@@ -69,7 +71,7 @@ const RegisterProgressPages = () => {
   useEffect(() => {
     const fetchRoutines = async () => {
       try {
-        const response = await axios.get("https://ecibienestar-age6hsb9g4dmegea.canadacentral-01.azurewebsites.net/api/user/routines");
+        const response = await apiClient.get("/user/routines");
         setRoutines(response.data?.data || []);
       } catch (error) {
         console.error("Error al cargar las rutinas:", error);
@@ -82,15 +84,16 @@ const RegisterProgressPages = () => {
   useEffect(() => {
     const fechtLastProgress = async () => {
       try{
-        const emaiil = sessionStorage.getItem("email");
-        if (!emaiil) {
-          return;
-        }
+        const sessionEmail = sessionStorage.getItem("email");
+        const email = authUser?.email ?? sessionEmail;
+        if (!email) return;
 
-        const user = await axios.get(`https://ecibienestar-age6hsb9g4dmegea.canadacentral-01.azurewebsites.net/api/user/users/email?email=${encodeURIComponent(emaiil)}`);
-        const userId = user.data?.data?.id;
+        // Obtener usuario por email
+        const userResp = await apiClient.get(`/user/users/email?email=${encodeURIComponent(email)}`);
+        const userId = userResp.data?.data?.id;
+        if (!userId) return;
 
-        const response = await axios.get(`https://ecibienestar-age6hsb9g4dmegea.canadacentral-01.azurewebsites.net/api/user/progress/${userId}`);
+        const response = await apiClient.get(`/user/progress/${userId}`);
         const lastProgress = response.data?.data?.slice(-1)[0];
 
         if(lastProgress){
@@ -120,21 +123,18 @@ const RegisterProgressPages = () => {
 
   const onSubmit = async (formData: FormData) => {
   try {
-    const email = sessionStorage.getItem("email");
+    const sessionEmail = sessionStorage.getItem("email");
+    const email = authUser?.email ?? sessionEmail;
     if (!email) throw new Error("Email no encontrado en sesión.");
 
     // Obtener datos del usuario
-    const userResponse = await axios.get(
-      `https://ecibienestar-age6hsb9g4dmegea.canadacentral-01.azurewebsites.net/api/user/users/email?email=${encodeURIComponent(email)}`
-    );
+    const userResponse = await apiClient.get(`/user/users/email?email=${encodeURIComponent(email)}`);
     const user = userResponse.data.data;
 
     if (!user || !user.id) throw new Error("Usuario no encontrado.");
 
     // Obtener rutina completa
-    const routineResponse = await axios.get(
-      `https://ecibienestar-age6hsb9g4dmegea.canadacentral-01.azurewebsites.net/api/user/routines/${formData.routineId}`
-    );
+    const routineResponse = await apiClient.get(`/user/routines/${formData.routineId}`);
     const routine = routineResponse.data.data;
 
     if (!routine || !routine.id) throw new Error("Rutina no encontrada.");
@@ -142,7 +142,7 @@ const RegisterProgressPages = () => {
     // Construir el cuerpo del POST
     const payload = {
       id: "", // El backend generará el ID
-      userId: user,
+      userId: user.id,
       routine: routine,
       goal: formData.goal,
       registrationDate: formData.registrationDate,
@@ -158,10 +158,7 @@ const RegisterProgressPages = () => {
     };
 
     // Enviar al backend
-    await axios.post(
-      "https://ecibienestar-age6hsb9g4dmegea.canadacentral-01.azurewebsites.net/api/user/progress",
-      payload
-    );
+    await apiClient.post("/user/progress", payload);
 
     alert("Progreso registrado exitosamente ✅");
 

@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCalendarDay, faClock, faUsers,faUser, faEnvelope,  } from "@fortawesome/free-solid-svg-icons";
-import axios from "axios";
+import apiClient from "@common/services/apiClient";
+import { useAuth } from "@common/context";
 
 interface GymSession {
   id: string;
@@ -33,7 +34,8 @@ function getLocalDateISO() {
 }
 
 const TrainerMainPage = () => {
-  const userEmail = sessionStorage.getItem("email") || "";
+  const { user: authUser } = useAuth();
+  const userEmail = authUser?.email ?? sessionStorage.getItem("email") ?? "";
 
   const [trainer, setTrainer] = useState<Trainer | null>(null);
   const [loadingTrainer, setLoadingTrainer] = useState(true);
@@ -46,7 +48,7 @@ const TrainerMainPage = () => {
   useEffect(() => {
     async function fetchRoutines() {
       try {
-        const res = await axios.get("https://ecibienestar-age6hsb9g4dmegea.canadacentral-01.azurewebsites.net/api/user/routines");
+        const res = await apiClient.get("/user/routines");
         const data = Array.isArray(res.data?.data) ? res.data.data : [];
         setRoutines(data);
       } catch (e) {
@@ -57,11 +59,7 @@ const TrainerMainPage = () => {
 
     async function fetchTrainerByEmail() {
       try {
-        const res = await axios.get(
-            `https://ecibienestar-age6hsb9g4dmegea.canadacentral-01.azurewebsites.net/api/user/users/email?email=${encodeURIComponent(
-                userEmail
-            )}`
-        );
+        const res = await apiClient.get(`/user/users/email?email=${encodeURIComponent(userEmail)}`);
         if (res.data.success && res.data.data) {
           setTrainer(res.data.data || null);
         } else {
@@ -78,9 +76,7 @@ const TrainerMainPage = () => {
     async function fetchTodaySessions() {
       try {
         const today = getLocalDateISO();
-        const res = await axios.get(
-            `https://ecibienestar-age6hsb9g4dmegea.canadacentral-01.azurewebsites.net/api/user/session/date/${today}`
-        );
+        const res = await apiClient.get(`/user/session/date/${today}`);
         const data = Array.isArray(res.data?.data) ? res.data.data : [];
         setTodaySessions(data);
       } catch (e) {

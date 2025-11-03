@@ -20,12 +20,27 @@ const Login: React.FC = () => {
     setError("");
 
     try {
-      const response = await apiClient.post<LoginResponse>("/auth/login", {
+      const endpoint = "/auth/login";
+      const base = (apiClient && (apiClient as any).defaults && (apiClient as any).defaults.baseURL) || "";
+      const fullUrl = `${base}${endpoint}`;
+
+      // Log request info (avoid printing raw password)
+      console.log("[Login] Intentando POST", {
+        endpoint,
+        fullUrl,
+        payload: { username, passwordLength: password?.length ?? 0 },
+      });
+
+      const response = await apiClient.post<LoginResponse>(endpoint, {
         username,
         password,
       });
 
-      console.log("Login exitoso:", response.data);
+      console.log("[Login] Respuesta recibida:", {
+        status: response.status,
+        data: response.data,
+        url: (response.config && (response.config as any).url) || fullUrl,
+      });
 
       const { token, refreshToken, id, email, fullName, role, specialty } =
         response.data;
@@ -37,8 +52,10 @@ const Login: React.FC = () => {
         speciality: specialty,
       };
 
-      login(user, token, refreshToken);
-      navigate("/home");
+  login(user, token, refreshToken);
+  // After login, go to the gym student main page
+  // Use the full path so we land inside the gym module routes
+  navigate("/modules/gym/student/home", { replace: true });
     } catch (err: any) {
       console.error("Error en login:", err);
 

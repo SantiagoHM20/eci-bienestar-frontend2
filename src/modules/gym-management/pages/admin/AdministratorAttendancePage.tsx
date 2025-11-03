@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import axios from 'axios';
+import apiClient from '@common/services/apiClient';
 import { saveAs } from 'file-saver';
 import * as XLSX from 'xlsx';
 import {
@@ -33,10 +33,10 @@ const AdministratorAttendancePage = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    axios
-      .get('https://ecibienestar-age6hsb9g4dmegea.canadacentral-01.azurewebsites.net/api/user/session')
+    apiClient
+      .get('/user/session')
       .then((res) => {
-        setSessions(res.data.data);
+        setSessions(res.data?.data || []);
       })
       .catch((err) => {
         console.error('Error al obtener sesiones:', err);
