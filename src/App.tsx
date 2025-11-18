@@ -1,7 +1,6 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import Dashboard from "./common/dashboard";
 import Layout from "./common/layout/layout";
-import ForgotPassword from "./modules/auth/components/ForgotPassword";
 import { GymRoutes } from "@modules/gym-management/routes";
 import { useAuth } from "./common/context";
 import { Role } from "./common/types";
@@ -92,17 +91,10 @@ function App() {
       } else {
         const res = await register(formData.name, formData.email, formData.password, formData.role);
         if (res.ok) {
-          const payload = res.data ?? {};
-          const token = payload.token || '';
-          const userFromApi = payload.user || payload;
-          const mappedUser = {
-            id: userFromApi?.id || '',
-            fullName: userFromApi?.name || userFromApi?.fullName || '',
-            email: userFromApi?.email || '',
-            role: userFromApi?.role || 'STUDENT',
-            speciality: null,
-          };
-          authLogin(mappedUser as any, token, '');
+          // Registro exitoso, cambiar a modo login
+          switchMode('login');
+          setError(null);
+          // Opcional: mostrar mensaje de éxito
         } else {
           setError('Error al registrar');
         }
@@ -137,9 +129,6 @@ function App() {
       <Routes>
         {/* Ruta inicial - login */}
         <Route path="/" element={<Root />} />
-
-        {/* Restaurar contrasena*/}
-        <Route path="/forgot-password" element={<ForgotPassword />} />
 
         <Route element={<ProtectedRoute />}>
           {/* Ruta principal - Dashboard */}
@@ -406,14 +395,6 @@ function App() {
 
             {error && (
               <div className="text-center text-red-600 text-sm">{error}</div>
-            )}
-
-            {mode === 'login' && (
-              <div className="text-center">
-                <a href="#" className="text-sm text-[#850000] hover:underline">
-                  ¿Olvidaste tu contraseña?
-                </a>
-              </div>
             )}
           </form>
         </div>
