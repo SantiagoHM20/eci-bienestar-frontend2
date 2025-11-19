@@ -96,7 +96,9 @@ function App() {
           setError(null);
           // Opcional: mostrar mensaje de éxito
         } else {
-          setError('Error al registrar');
+          // Display the specific error message from backend if available
+          const errorMsg = res.message || res.data?.message || 'Error al registrar';
+          setError(errorMsg);
         }
       }
     } catch {
